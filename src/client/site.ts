@@ -503,6 +503,22 @@ function initQuoteLocation(): void {
   });
 }
 
+// Count this page as a visit (logVisit in src/tracking.ts). Sent from the page's script, once the page is on
+// screen, so programs that only download the HTML are never counted; browsers driven by automation say so
+// through navigator.webdriver and are skipped too.
+function initVisit(): void {
+  if (navigator.webdriver || !navigator.sendBeacon || location.pathname.startsWith('/staff')) return;
+  const send = () => navigator.sendBeacon('/visit', new URLSearchParams({ path: location.pathname, referrer: document.referrer }));
+  if (document.visibilityState === 'visible') return void send();
+  const onShow = () => {
+    if (document.visibilityState !== 'visible') return;
+    document.removeEventListener('visibilitychange', onShow);
+    send();
+  };
+  document.addEventListener('visibilitychange', onShow);
+}
+
+initVisit();
 initHeader();
 initMenus();
 initViewer();

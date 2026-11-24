@@ -9,7 +9,7 @@ import { router } from './routes/index.js';
 import { quotesRouter } from './routes/quotes.js';
 import { staffRouter } from './routes/staff.js';
 import { locationsRouter } from './routes/locations.js';
-import { logVisits } from './tracking.js';
+import { logVisit } from './tracking.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -40,7 +40,7 @@ export function createApp() {
   app.use(express.json());
   app.use(express.static(path.join(root, 'public'), { maxAge: isProd ? '7d' : 0 }));
 
-  app.use(logVisits);
+  app.post('/visit', logVisit);
 
   app.use((req, res, next) => {
     res.locals.appName = config.appName;

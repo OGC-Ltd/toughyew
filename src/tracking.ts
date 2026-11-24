@@ -4,6 +4,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { BlockList, isIP } from 'node:net';
 import geoip from 'geoip-lite';
 import { dataDir } from './paths.js';
+import { servicePages } from './content.js';
 
 // Visitor and supplier location records. IP addresses are placed on a map from geoip-lite's local copy of the
 // GeoLite2 database, so no address leaves the server. An IP location is approximate: usually the town of the
@@ -59,17 +60,38 @@ export async function readLog<T>(file: string): Promise<T[]> {
   return out;
 }
 
-// Every page someone opens (static files are served before this runs, so only pages are counted). Visits from
-// this machine or an internal network (testing, health checks) are not real visitors and are not recorded.
-export function logVisits(req: Request, _res: Response, next: NextFunction) {
-  if (req.method === 'GET' && !req.path.startsWith('/staff') && req.path !== '/health' && isPublicIp(clientIp(req))) {
+// Automated visitors: search and AI crawlers, uptime and certificate watchers, vulnerability scanners and scripts.
+// Real browsers all say "Mozilla/5.0 (...)" and none of them names itself with these words; anything else
+// (no user agent, curl, python-requests, Go-http-client, axios) is a program, not a person.
+const botWords = /bot|crawl|spider|slurp|scan|scout|sniff|agent|compatible;|headless|lighthouse|preview|monitor|research|watch|archive|fetch|http:\/\/|https:\/\/|\+/i;
+export function isBot(userAgent: string | undefined): boolean {
+  const ua = String(userAgent ?? '').trim();
+  return !/^Mozilla\/5\.0 \(/.test(ua) || botWords.test(ua);
+}
+
+// The site's own pages. Anything else someone asked for (/.env, /wp-admin, /.git/config) was a scanner looking
+// for a weakness, not a person reading the site.
+const pagePaths = new Set(['/', '/privacy', '/supplier-quote', ...servicePages.map((p) => p.path)]);
+export const isSitePage = (p: string) => pagePaths.has(p) || /^\/supplier-quote\/[A-Za-z0-9-]+$/.test(p);
+
+// Every page a person opens. The page's own script reports the visit (POST /visit, sent by initVisit in
+// src/client/site.ts) once it has run in a browser, so crawlers and scanners that fetch the HTML without running
+// it are never counted, however they dress up their user agent. Left out as well: visits from this machine or an
+// internal network (testing, health checks), automated browsers (isBot, navigator.webdriver), anything that is
+// not a page of the site, and reports without the language header every browser sends or from another site.
+export function logVisit(req: Request, res: Response) {
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const page = String(body.path ?? '');
+  const origin = String(req.headers.origin ?? '');
+  const sameSite = !origin || origin.replace(/^https?:\/\//, '') === req.headers.host;
+  if (isSitePage(page) && sameSite && isPublicIp(clientIp(req)) && !isBot(req.headers['user-agent']) && req.headers['accept-language']) {
     record('visits.jsonl', {
-      path: req.path,
-      referrer: String(req.headers.referer ?? '').slice(0, 400),
+      path: page,
+      referrer: String(body.referrer ?? '').slice(0, 400),
       ...requestTrace(req),
     }).catch((err) => console.error('visit log failed', err));
   }
-  next();
+  res.status(204).end();
 }
 
 // GPS position sent with the form: numbers in range, or null.

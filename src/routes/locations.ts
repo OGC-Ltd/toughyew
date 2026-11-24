@@ -1,5 +1,5 @@
 import { Router, type Request } from 'express';
-import { isPublicIp, readLog, type Gps, type IpLocation } from '../tracking.js';
+import { isBot, isPublicIp, isSitePage, readLog, type Gps, type IpLocation } from '../tracking.js';
 import { readQuotes } from './quotes.js';
 import { pageOf } from '../paging.js';
 
@@ -32,7 +32,8 @@ async function allEntries(): Promise<LocationEntry[]> {
   const [visits, attempts, quotes] = await Promise.all([readLog<Visit>('visits.jsonl'), readLog<Attempt>('quote-attempts.jsonl'), readQuotes()]);
   const who = (b?: string, c?: string) => [b, c].filter(Boolean).join(', ');
   const entries: LocationEntry[] = [
-    ...visits.map((v) => ({ at: v.at, kind: 'visit' as const, ip: v.ip ?? '', ipLocation: v.ipLocation ?? null, gps: null, detail: v.path, who: '', link: '', userAgent: v.userAgent ?? '' })),
+    // Visits logged before the bot filter (src/tracking.ts, logVisits) still hold scanners and crawlers; drop them here too.
+    ...visits.filter((v) => isSitePage(v.path) && !isBot(v.userAgent)).map((v) => ({ at: v.at, kind: 'visit' as const, ip: v.ip ?? '', ipLocation: v.ipLocation ?? null, gps: null, detail: v.path, who: '', link: '', userAgent: v.userAgent ?? '' })),
     ...attempts.map((a) => ({ at: a.at, kind: 'failed' as const, ip: a.ip ?? '', ipLocation: a.ipLocation ?? null, gps: null, detail: a.reason, who: who(a.business, a.contact), link: '', userAgent: a.userAgent ?? '' })),
     ...quotes.map((q) => ({ at: q.receivedAt, kind: 'sent' as const, ip: q.ip ?? '', ipLocation: q.ipLocation ?? null, gps: q.gps ?? null, detail: q.id, who: who(q.business, q.contact), link: `/staff/quotations/${q.id}`, userAgent: q.userAgent ?? '' })),
   ];
