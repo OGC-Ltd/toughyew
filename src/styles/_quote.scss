@@ -293,8 +293,55 @@ $line-cols: 2rem minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1.25fr) minmax(0, 0
 .badge {
   display: inline-block; padding: var(--space-3xs) var(--space-xs); border-radius: var(--radius);
   font-size: var(--text-xs); font-weight: 600; white-space: nowrap;
-  &--valid { background: color-mix(in oklab, var(--color-success) 14%, transparent); color: var(--color-success); }
-  &--expired { background: color-mix(in oklab, var(--color-error) 12%, transparent); color: var(--color-error); }
+  &--valid, &--sent { background: color-mix(in oklab, var(--color-success) 14%, transparent); color: var(--color-success); }
+  &--expired, &--failed { background: color-mix(in oklab, var(--color-error) 12%, transparent); color: var(--color-error); }
+  &--visit { background: var(--color-paper-2); color: var(--color-ink-2); }
+}
+
+// Staff: the switch between the quotation list and the location log, under each staff heading.
+.staff-switch {
+  display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-md);
+  a {
+    display: inline-flex; align-items: center; min-height: 44px; padding-inline: var(--space-md);
+    border: 1px solid color-mix(in oklab, var(--color-on-dark) 45%, transparent); border-radius: var(--radius-pill);
+    color: var(--color-on-dark); font-weight: 600; font-size: var(--text-sm); text-decoration: none;
+    transition: background-color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
+    &:hover { border-color: var(--color-on-dark); }
+    &:focus-visible { outline: 2px solid var(--color-on-dark); outline-offset: 2px; }
+    &[aria-current="page"] { background: var(--color-surface); border-color: var(--color-surface); color: var(--color-accent); }
+  }
+}
+
+.staff-table--log {
+  td:first-child { width: 11rem; }
+  .badge { margin-bottom: var(--space-3xs); }
+}
+.staff-table__ip { font-size: var(--text-sm); word-break: break-all; }
+.staff-table__none { color: var(--color-muted); }
+.staff-table__pdf {
+  display: inline-flex; align-items: center; min-height: 36px; padding-inline: var(--space-sm);
+  border: 1px solid var(--color-accent); border-radius: var(--radius);
+  color: var(--color-accent); font-weight: 600; text-decoration: none;
+  transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+  &:hover { background: var(--color-accent); color: var(--color-accent-ink); }
+  &:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+}
+
+// Page numbers under the staff lists.
+.pager {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-xs);
+  &__pages { display: flex; flex-wrap: wrap; gap: var(--space-2xs); margin: 0; padding: 0; list-style: none; }
+  &__num, &__step {
+    display: inline-grid; place-items: center; min-width: 44px; min-height: 44px; padding-inline: var(--space-sm);
+    border-radius: var(--radius); background: var(--color-surface);
+    color: var(--color-ink); font-weight: 600; font-size: var(--text-sm); font-variant-numeric: tabular-nums; text-decoration: none;
+    transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+  }
+  a:hover { background: var(--color-paper-2); }
+  a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  &__num[aria-current="page"] { background: var(--color-accent); color: var(--color-accent-ink); }
+  &__step--off { color: var(--color-muted); opacity: 0.6; }
+  &__gap { display: grid; place-items: center; min-width: 24px; color: var(--color-muted); }
 }
 
 // Privacy notice: contents on the left, text on the right.

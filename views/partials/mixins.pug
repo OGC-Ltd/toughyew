@@ -41,3 +41,23 @@ mixin icon(name)
         line(x1="4" x2="20" y1="6" y2="6")
         line(x1="4" x2="20" y1="12" y2="12")
         line(x1="4" x2="20" y1="18" y2="18")
+
+//- Page numbers under a staff list (src/paging.ts). Shown only when there is more than one page.
+mixin pager(p, label)
+  if p && p.pages > 1
+    nav.pager(aria-label=label || 'Pages')
+      if p.prev
+        a.pager__step(href=p.prev rel="prev") Previous
+      else
+        span.pager__step.pager__step--off(aria-hidden="true") Previous
+      ol.pager__pages
+        each l in p.links
+          if l.gap
+            li.pager__gap(aria-hidden="true") …
+          else
+            li
+              a.pager__num(href=l.href aria-current=l.current ? 'page' : undefined aria-label=`Page ${l.n}`)= l.n
+      if p.next
+        a.pager__step(href=p.next rel="next") Next
+      else
+        span.pager__step.pager__step--off(aria-hidden="true") Next

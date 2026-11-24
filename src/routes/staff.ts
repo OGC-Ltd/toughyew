@@ -1,5 +1,7 @@
 import { Router, type NextFunction, type Request, type Response } from 'express';
+import { quotePdf, quotePdfName } from '../quote-pdf.js';
 import { formatters, isQuoteId, readQuotes, renderQuote, type Quote } from './quotes.js';
+import { pageOf } from '../paging.js';
 
 // Staff pages: the quotations suppliers have sent. No sign-in (by request), so they are left out of the
 // site's links and search engines are asked not to index or keep them.
@@ -35,9 +37,12 @@ staffRouter.get('/staff/quotations', async (req, res) => {
   const all = await readQuotes();
   const { term, status, list } = filtered(all, req.query);
   const query = new URLSearchParams({ ...(term && { q: term }), ...(status !== 'all' && { status }) }).toString();
+  const paging = pageOf(list.length, req.query.page, 25, '/staff/quotations', { ...(term && { q: term }), ...(status !== 'all' && { status }) });
   res.render('pages/staff-quotes', {
     title: 'Received quotations',
-    quotes: list.map((q) => ({ ...q, expired: isExpired(q) })),
+    quotes: list.slice(paging.from, paging.to).map((q) => ({ ...q, expired: isExpired(q) })),
+    shown: list.length,
+    paging,
     total: all.length,
     term, status,
     csvHref: `/staff/quotations.csv${query ? `?${query}` : ''}`,
@@ -67,6 +72,17 @@ staffRouter.get('/staff/quotations.csv', async (req, res) => {
   res.set('Content-Type', 'text/csv; charset=utf-8');
   res.set('Content-Disposition', `attachment; filename="quotations-${todayIso()}.csv"`);
   res.send('﻿' + [head, ...rows].map((r) => r.map(cell).join(',')).join('\r\n') + '\r\n');
+});
+
+// The quotation as a PDF to download and keep (the staff copy adds where it was sent from).
+staffRouter.get('/staff/quotations/:id.pdf', async (req, res, next) => {
+  const id = req.params.id;
+  if (!isQuoteId(id)) return next();
+  const q = (await readQuotes()).find((x) => x.id === id);
+  if (!q) return next();
+  res.set('Content-Type', 'application/pdf');
+  res.set('Content-Disposition', `attachment; filename="${quotePdfName(q)}"`);
+  quotePdf(q, { staff: true }).pipe(res);
 });
 
 staffRouter.get('/staff/quotations/:id', async (req, res, next) => {

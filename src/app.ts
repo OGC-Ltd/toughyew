@@ -8,6 +8,7 @@ import { config, isProd } from './config.js';
 import { router } from './routes/index.js';
 import { quotesRouter } from './routes/quotes.js';
 import { staffRouter } from './routes/staff.js';
+import { locationsRouter } from './routes/locations.js';
 import { logVisits } from './tracking.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -51,6 +52,7 @@ export function createApp() {
   app.use(router);
   app.use(quotesRouter);
   app.use(staffRouter);
+  app.use(locationsRouter);
 
   app.use((_req, res) => {
     res.status(404).render('pages/404', { title: 'Not found' });

@@ -1,0 +1,82 @@
+extends ../layouts/base
+
+//- Staff only (src/routes/locations.ts): where each visit, failed send and quotation came from, newest first.
+block content
+  section.quote-hero.quote-hero--staff
+    .container.quote-hero__inner
+      h1 Location log.
+      p.lead
+        if total === 0
+          | Nothing recorded yet. Each page visit, quotation and failed send will appear here with its IP address and place.
+        else
+          | #{counts.visit} #{counts.visit === 1 ? 'visit' : 'visits'}, #{counts.sent} #{counts.sent === 1 ? 'quotation' : 'quotations'} sent and #{counts.failed} not sent, from #{counts.ips} IP #{counts.ips === 1 ? 'address' : 'addresses'}.
+      p.staff-switch
+        a(href="/staff/quotations") Received quotations
+        a(href="/staff/locations" aria-current="page") Location log
+
+  section.quote-page
+    .container
+      .staff-list
+        form.staff-filter(method="get" action="/staff/locations" role="search")
+          .field
+            label(for="l-q") Search
+            input#l-q(type="search" name="q" value=term placeholder="IP address, town, country, supplier, page…")
+          .field
+            label(for="l-kind") Show
+            select#l-kind(name="kind")
+              option(value="all" selected=kind === 'all') All
+              each label, key in kinds
+                option(value=key selected=kind === key)= label
+          .staff-filter__actions
+            button.btn.btn--primary(type="submit") Show
+            if term || kind !== 'all'
+              a.btn.btn--outline(href="/staff/locations") Clear
+            if shown
+              a.btn.btn--outline(href=csvHref download) Download CSV
+              a.btn.btn--outline(href=jsonHref) JSON
+
+        if total && !shown
+          p.staff-list__empty Nothing matches that search.
+        else if shown
+          p.staff-list__count(role="status")
+            if paging.pages > 1
+              | Showing #{paging.from + 1} to #{paging.to} of #{shown}.
+            else if term || kind !== 'all'
+              | #{shown} #{shown === 1 ? 'entry' : 'entries'}.
+          .staff-table-wrap
+            table.staff-table.staff-table--log
+              thead
+                tr
+                  th(scope="col") Time (Nairobi)
+                  th(scope="col") Event
+                  th(scope="col") IP address
+                  th(scope="col") IP place
+                  th(scope="col") GPS position
+              tbody
+                each e in entries
+                  tr
+                    td.staff-table__date= when(e.at)
+                    td
+                      span.badge(class=`badge--${e.kind}`)= kinds[e.kind]
+                      if e.link
+                        a.staff-table__sub.staff-table__link(href=e.link)= e.detail
+                      else
+                        span.staff-table__sub= e.detail
+                      if e.who
+                        span.staff-table__sub= e.who
+                    td
+                      code.staff-table__ip= e.ip || '—'
+                    td
+                      if e.ipLocation
+                        | #{placeName(e.ipLocation) || 'Unknown place'}
+                        a.staff-table__sub(href=mapHref(e.ipLocation.lat, e.ipLocation.lng) rel="noopener" target="_blank") #{e.ipLocation.lat}, #{e.ipLocation.lng}
+                      else
+                        span.staff-table__none Not known
+                    td
+                      if e.gps
+                        a.staff-table__link(href=mapHref(e.gps.lat, e.gps.lng) rel="noopener" target="_blank") #{e.gps.lat.toFixed(6)}, #{e.gps.lng.toFixed(6)}
+                        if e.gps.accuracy >= 0
+                          span.staff-table__sub Within #{e.gps.accuracy} m
+                      else
+                        span.staff-table__none —
+          +pager(paging, 'Location log pages')

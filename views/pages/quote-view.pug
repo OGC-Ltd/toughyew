@@ -11,6 +11,7 @@ block content
           button.btn.btn--primary(type="button" data-print hidden)
             +icon('printer')
             span Print or save as PDF
+          a.btn.btn--outline(href=staff ? `/staff/quotations/${q.id}.pdf` : `/supplier-quote/${q.id}.pdf` download) Download PDF
           if staff
             a.btn.btn--outline(href="/staff/quotations") Back to all quotations
             a.btn.btn--outline(href=`mailto:${q.email}?subject=${encodeURIComponent(`Your quotation ${q.quoteNo}`)}`) Email #{q.contact}

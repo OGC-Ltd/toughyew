@@ -10,6 +10,9 @@ block content
           | No supplier has sent a quotation yet. Share the form at #[a(href="/supplier-quote") /supplier-quote] with your suppliers.
         else
           | #{total} #{total === 1 ? 'quotation' : 'quotations'} from suppliers, newest first. Open one to see it in full or print it.
+      p.staff-switch
+        a(href="/staff/quotations" aria-current="page") Received quotations
+        a(href="/staff/locations") Location log
 
   section.quote-page
     .container
@@ -28,15 +31,17 @@ block content
             button.btn.btn--primary(type="submit") Show
             if term || status !== 'all'
               a.btn.btn--outline(href="/staff/quotations") Clear
-            if quotes.length
+            if shown
               a.btn.btn--outline(href=csvHref download) Download spreadsheet (CSV)
 
-        if total && !quotes.length
+        if total && !shown
           p.staff-list__empty Nothing matches that search.
-        else if quotes.length
+        else if shown
           p.staff-list__count(role="status")
-            if term || status !== 'all'
-              | Showing #{quotes.length} of #{total}.
+            if paging.pages > 1
+              | Showing #{paging.from + 1} to #{paging.to} of #{shown}.
+            else if term || status !== 'all'
+              | Showing #{shown} of #{total}.
           .staff-table-wrap
             table.staff-table
               thead
@@ -48,6 +53,8 @@ block content
                   th(scope="col") Site
                   th.num(scope="col") Total
                   th(scope="col") Valid until
+                  th(scope="col")
+                    span.visually-hidden Download
               tbody
                 each q in quotes
                   tr
@@ -70,3 +77,6 @@ block content
                     td
                       span.badge(class=q.expired ? 'badge--expired' : 'badge--valid')= shortDay(q.validUntil)
                       span.visually-hidden= q.expired ? ' (expired)' : ' (still valid)'
+                    td
+                      a.staff-table__pdf(href=`/staff/quotations/${q.id}.pdf` download aria-label=`Download ${q.business}'s quotation as a PDF`) PDF
+          +pager(paging, 'Quotation pages')

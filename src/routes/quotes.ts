@@ -3,7 +3,8 @@ import { appendFile, mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { dataDir } from '../paths.js';
 import { Router, type Request, type Response } from 'express';
-import { readGps, record as recordEvent, requestTrace, type Gps, type IpLocation } from '../tracking.js';
+import { quotePdf, quotePdfName } from '../quote-pdf.js';
+import { clientIp, isPublicIp, readGps, record as recordEvent, requestTrace, type Gps, type IpLocation } from '../tracking.js';
 
 // Supplier quotations: a supplier fills in the form at /supplier-quote, the quotation is stored as one line
 // in data/quotations.jsonl and shown back as a branded, printable document at /supplier-quote/<id>.
@@ -65,6 +66,8 @@ quotesRouter.get('/supplier-quote', (_req, res) => render(res));
 // A quotation that could not be sent for want of a GPS position: who tried (as far as they had filled in), and from where.
 function recordAttempt(req: Request, reason: string, who: Partial<Record<'business' | 'contact' | 'email' | 'phone', string>>) {
   const clip = (v: unknown) => String(v ?? '').trim().slice(0, 200);
+  // Attempts from this machine or an internal network are tests, not suppliers.
+  if (!isPublicIp(clientIp(req))) return Promise.resolve();
   return recordEvent('quote-attempts.jsonl', {
     reason,
     business: clip(who.business), contact: clip(who.contact), email: clip(who.email), phone: clip(who.phone),
@@ -210,6 +213,17 @@ export function renderQuote(res: Response, q: Quote, opts: { sent?: boolean; sta
     q, sent: !!opts.sent, staff: !!opts.staff, ...formatters,
   });
 }
+
+// The supplier's own copy as a PDF (no record of where it was sent from).
+quotesRouter.get('/supplier-quote/:id.pdf', async (req, res, next) => {
+  const id = req.params.id;
+  if (!isQuoteId(id)) return next();
+  const q = (await readQuotes()).find((x) => x.id === id);
+  if (!q) return next();
+  res.set('Content-Type', 'application/pdf');
+  res.set('Content-Disposition', `attachment; filename="${quotePdfName(q)}"`);
+  quotePdf(q).pipe(res);
+});
 
 quotesRouter.get('/supplier-quote/:id', async (req, res, next) => {
   const id = req.params.id;
