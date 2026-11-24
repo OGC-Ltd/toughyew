@@ -1,0 +1,11 @@
+node_modules
+dist
+data
+photos-src
+.env
+.git
+.github
+.hallmark
+public/css
+public/js
+*.log

@@ -1,0 +1,33 @@
+# Tough Yew Co., hosted next to project-manager on the same server.
+# project-manager's Caddy serves HTTPS for toughyew.com (site block: toughyew.caddy, copied to
+# ~/project-manager/sites/) and reaches this container over the "edge" network.
+services:
+  toughyew:
+    image: ${IMAGE:-ghcr.io/ogc-ltd/toughyew:latest}
+    build: .
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Caddy is the one hop in front; trust it for the visitor's IP address.
+      TRUST_PROXY: ${TRUST_PROXY:-1}
+    volumes:
+      - toughyew-data:/app/data
+    # The server has under 1 GB of memory shared by every app; the IP-location data alone
+    # takes about 110 MB, so the app needs about 200 MB.
+    mem_limit: 320m
+    # Not published: only Caddy reaches it, over the edge network.
+    expose:
+      - "3100"
+    networks:
+      - edge
+
+networks:
+  # Shared with project-manager's Caddy. Create once on the server: docker network create edge
+  edge:
+    external: true
+
+volumes:
+  # Visits, enquiries and supplier quotations (JSONL). Back this up; never remove it on redeploy.
+  toughyew-data:

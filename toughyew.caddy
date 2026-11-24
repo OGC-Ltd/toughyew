@@ -1,0 +1,13 @@
+# Served by project-manager's Caddy: the deploy copies this file to ~/project-manager/sites/.
+# The certificates come from Let's Encrypt; DNS for both names must point at the server.
+toughyew.com {
+	encode zstd gzip
+	request_body {
+		max_size 1MB
+	}
+	reverse_proxy toughyew:3100
+}
+
+www.toughyew.com {
+	redir https://toughyew.com{uri} permanent
+}
