@@ -1,0 +1,36 @@
+[
+ {
+  "shape": "owner mockup (kept)",
+  "theme": "brand",
+  "axes": "light/display-condensed/chromatic-green",
+  "hero": "Stage",
+  "nav": "edge-aligned",
+  "footer": "mast",
+  "imagery": "photographs, Wikimedia Commons 4, natural",
+  "photos": [
+   "A beautiful, modern wooden house features large windows and fresh landscaping.jpg",
+   "Carpenter working on an item 4.jpg",
+   "Oak framed sun lounge extension - geograph.org.uk - 2777388.jpg",
+   "Staircase from Cassiobury Park, Herfordshire MET DP-12790-001.jpg"
+  ],
+  "entry": "views/pages/home.pug",
+  "fingerprint": "green field + timber house, condensed caps, sticky enquiry beside form",
+  "sections": [
+   "Hero",
+   "Grid (services)",
+   "Split (craft)",
+   "Steps (process band)",
+   "Showcase (inspiration)",
+   "Rows (FAQ)",
+   "Form (enquiry band)",
+   "Footer"
+  ],
+  "signature": "the yew mark and a timber house side by side on the brand green",
+  "waived": [
+   "22"
+  ],
+  "prompt": "Tough Yew Co. builder site from owner mockup and brand board",
+  "date": "2026-11-24",
+  "mode": "build"
+ }
+]

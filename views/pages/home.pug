@@ -1,15 +1,128 @@
 extends ../layouts/base
 
+mixin field(name, label, opts = {})
+  - const err = errors[name]
+  - const described = err ? `e-${name}` : undefined
+  .field(class={ 'field--wide': !!opts.wide, 'field--error': !!err })
+    label(for=`f-${name}`)
+      = label
+      if opts.optional
+        span.field__opt  (optional)
+    if opts.multiline
+      textarea(id=`f-${name}` name=name rows="5" required=!opts.optional aria-invalid=err ? 'true' : undefined aria-describedby=described autofocus=(firstError === name))= values[name]
+    else if opts.options
+      select(id=`f-${name}` name=name required=!opts.optional aria-invalid=err ? 'true' : undefined aria-describedby=described autofocus=(firstError === name))
+        option(value="" selected=!values[name])= opts.placeholder
+        each o in opts.options
+          option(value=o.value selected=(values[name] === o.value))= o.label
+    else
+      input(id=`f-${name}` name=name type=opts.type || 'text' value=values[name] autocomplete=opts.autocomplete inputmode=opts.inputmode required=!opts.optional aria-invalid=err ? 'true' : undefined aria-describedby=described autofocus=(firstError === name))
+    p.field__error(id=`e-${name}`)= err || ''
+
 block content
   section.hero
-    p.eyebrow Server-rendered starter
-    h1.hero__title Build fast, render on the server.
-    p.hero__lead #{appName} is an Express app written in TypeScript, with Pug templates and SCSS styles.
-    .hero__actions
-      a.btn.btn--primary(href="/contact") Get in touch
-      a.btn.btn--ghost(href="/about") Learn more
+    .hero__text
+      .hero__copy
+        img.hero__mark(src="/img/brand/mark-light.png" alt="" width="505" height="500")
+        h1 Strong roots. Exceptional spaces.
+        p.lead New builds, extensions and bespoke joinery, made to stand for generations.
+        .hero__actions
+          a.btn.btn--on-field(href="#enquire") Tell us about your project
+          a.link-action(href="#process") See how we work
+    .hero__picture(data-slot="hero" data-alt="A finished Tough Yew Co. home, photographed outside")
+      img(src="/img/photos/house-1920.jpg" srcset="/img/photos/house-960.jpg 960w, /img/photos/house-1920.jpg 1920w" sizes="(max-width: 60rem) 100vw, 58vw" width="1469" height="2886" alt="A two-storey timber-clad house with tall black-framed windows and a pergola" fetchpriority="high")
 
-  section.grid(aria-label="Stack")
-    each f in features
-      +card(f.title)
-        p= f.body
+  section#services.services
+    .container
+      .head-split
+        h2 Your vision. Our craft.
+        p.lead From bare ground, an existing house or a single staircase.
+      ol.services__list
+        each s in services
+          li.service
+            h3= s.title
+            p= s.body
+            a.service__link(href=`/?type=${s.slug}#enquire`) Enquire about #{s.title.toLowerCase()}
+
+  section.craft
+    .container.craft__inner
+      .craft__picture(data-slot="craft" data-alt="Your own team at work in the workshop or on site")
+        img(src="/img/photos/carpenter-1920.jpg" srcset="/img/photos/carpenter-960.jpg 960w, /img/photos/carpenter-1920.jpg 1920w" sizes="(max-width: 60rem) 100vw, 45vw" width="1920" height="1280" alt="A carpenter marking a dark timber board with a red pencil and a square" loading="lazy")
+      .craft__text
+        h2 Good building. No shortcuts.
+        p.lead Like the yew, strength comes from the roots: sound foundations, honest materials and care in every detail.
+        p We listen carefully, plan thoroughly and treat your home as a home.
+        dl.craft__facts
+          div
+            dt Honest materials
+            dd Chosen to last, never to cut a corner.
+          div
+            dt Thoughtful details
+            dd The finish gets the same care as the frame.
+
+  section#process.process
+    .container
+      .head-split
+        h2 Solid from the start.
+        p.lead Four steps, from the first conversation to the handover.
+      ol.steps
+        each st in steps
+          li.step
+            h3= st.title
+            p= st.body
+
+  section#inspiration.inspiration
+    .container
+      .head-split
+        h2 Spaces to inspire.
+        p.lead Oak, timber and the joinery that holds a room together.
+      .inspiration__grid
+        figure.frame.frame--lead
+          .frame__picture(data-slot="inspire-1" data-alt="A Tough Yew Co. staircase or piece of joinery")
+            img(src="/img/photos/staircase-1920.jpg" srcset="/img/photos/staircase-960.jpg 960w, /img/photos/staircase-1920.jpg 1920w" sizes="(max-width: 60rem) 100vw, 60vw" width="1920" height="1440" alt="A carved oak staircase with a deep balustrade against a red wall" loading="lazy")
+          figcaption
+            strong Craft you can feel
+            span A carved oak staircase: joinery as the centre of a hallway.
+        figure.frame
+          .frame__picture(data-slot="inspire-2" data-alt="A finished Tough Yew Co. extension")
+            img(src="/img/photos/extension-1920.jpg" srcset="/img/photos/extension-960.jpg 960w, /img/photos/extension-1920.jpg 1920w" sizes="(max-width: 60rem) 100vw, 35vw" width="1920" height="1440" alt="An oak frame being lifted into place by a small crane beside a brick house" loading="lazy")
+          figcaption
+            strong Raised in oak
+            span An oak-framed garden room, lifted into place.
+
+  section#questions.questions
+    .container.questions__inner
+      .questions__head
+        h2 Let’s clear things up.
+        p.lead Before you get in touch.
+      .questions__list
+        each f, i in faqs
+          details.faq
+            summary= f.q
+            p= f.a
+
+  section#enquire.enquire
+    .container.enquire__inner
+      .enquire__intro
+        h2 Let’s build something that lasts.
+        p.lead Big idea or early days, we’d like to hear what you have in mind.
+      form.enquiry(method="post" action="/enquire" novalidate)
+        h3 Tell us about your project
+        if sent
+          p.notice(role="status") Thank you. Your enquiry has reached us and we will reply by email.
+        else if Object.keys(errors).length
+          p.notice.notice--error(role="alert") Some details need another look before we can send this.
+        .enquiry__fields
+          +field('name', 'Your name', { autocomplete: 'name' })
+          +field('email', 'Email address', { type: 'email', autocomplete: 'email', inputmode: 'email' })
+          +field('phone', 'Phone number', { type: 'tel', autocomplete: 'tel', inputmode: 'tel', optional: true })
+          +field('location', 'Project location', { autocomplete: 'address-level2' })
+          +field('type', 'Project type', { options: projectTypes, placeholder: 'Choose a project type' })
+          +field('start', 'Ideal start', { options: timeframes, placeholder: 'Choose a timeframe', optional: true })
+          +field('budget', 'Approximate budget', { optional: true, wide: true })
+          +field('message', 'Tell us more', { multiline: true, wide: true })
+        .check(class={ 'field--error': !!errors.consent })
+          input#f-consent(type="checkbox" name="consent" value="yes" checked=(values.consent === 'yes') aria-invalid=errors.consent ? 'true' : undefined aria-describedby=errors.consent ? 'e-consent' : undefined autofocus=(firstError === 'consent'))
+          label(for="f-consent") I agree to be contacted about this enquiry.
+          p.field__error#e-consent= errors.consent || ''
+        button.btn.btn--primary(type="submit") Send project enquiry

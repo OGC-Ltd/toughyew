@@ -7,10 +7,10 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "concurrently -k -n server,styles -c cyan,magenta \"tsx watch --clear-screen=false src/server.ts\" \"sass --watch --no-source-map src/styles/main.scss:public/css/main.css\"",
+    "dev": "concurrently -k -n server,styles -c cyan,magenta \"tsx watch --clear-screen=false src/server.ts\" \"sass --watch --no-source-map --no-charset src/styles/main.scss:public/css/main.css\"",
     "build": "npm run build:styles && npm run build:server",
     "build:server": "tsc -p tsconfig.json",
-    "build:styles": "sass --no-source-map --style=compressed src/styles/main.scss:public/css/main.css",
+    "build:styles": "sass --no-source-map --no-charset --style=expanded src/styles/main.scss:public/css/main.css",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit"
   },

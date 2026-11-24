@@ -1,11 +1,17 @@
-- const nav = [{ href: '/', label: 'Home' }, { href: '/about', label: 'About' }, { href: '/contact', label: 'Contact' }]
-header.site-header
-  .container.site-header__inner
-    a.brand(href="/")
-      span.brand__mark(aria-hidden="true") T
-      span.brand__name= appName
-    nav.site-nav(aria-label="Main")
+- const nav = [{ href: '/#services', label: 'What we do' }, { href: '/#process', label: 'How we work' }, { href: '/#inspiration', label: 'Inspiration' }, { href: '/#questions', label: 'Questions' }]
+header.site-nav
+  .container.site-nav__inner
+    a.lockup(href="/" aria-label="Tough Yew Co., home")
+      img.lockup__mark(src="/img/brand/mark.png" alt="" width="505" height="500")
+      span.lockup__name Tough Yew Co.
+    nav.site-nav__links(aria-label="Main")
       ul
         each item in nav
-          li
-            a(href=item.href aria-current=(path === item.href ? 'page' : undefined))= item.label
+          li: a(href=item.href)= item.label
+    a.btn.btn--quiet.site-nav__action(href="/#enquire") Start a project
+    details.site-nav__menu
+      summary Menu
+      ul
+        each item in nav
+          li: a(href=item.href)= item.label
+        li: a(href="/#enquire") Start a project

@@ -24,12 +24,13 @@ src/
   server.ts          entry point
   app.ts             express setup (helmet, compression, static, pug)
   config.ts          env config
-  routes/index.ts    page routes
+  routes/index.ts    home + POST /enquire (validated, appended to data/enquiries.jsonl)
+  content.ts         page copy, services, steps, FAQs, photo credits
   styles/            SCSS: abstracts/ (tokens, mixins), base, layout, components/
 views/
   layouts/base.pug   html shell
-  partials/          header, footer, mixins (card, field)
-  pages/             home, about, contact, 404, error
+  partials/          header (lockup, nav), footer (mast, photo credits)
+  pages/             home (one page: services, craft, process, inspiration, FAQ, enquiry), 404, error
 public/              static files; css/ is generated
 ```
 

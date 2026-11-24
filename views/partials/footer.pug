@@ -1,3 +1,21 @@
 footer.site-footer
   .container
-    p © #{year} #{appName}
+    .site-footer__mast
+      a.lockup.lockup--light(href="/" aria-label="Tough Yew Co., home")
+        img.lockup__mark(src="/img/brand/mark-light.png" alt="" width="505" height="500")
+        span.lockup__name Tough Yew Co.
+      p.site-footer__tagline Building. Lasting. Strong.
+    .site-footer__base
+      ul.site-footer__links
+        li: a(href="/#services") New builds
+        li: a(href="/#services") Renovations and extensions
+        li: a(href="/#services") Bespoke joinery
+        li: a(href="/#enquire") Start a project
+      p © #{year} Tough Yew Co.
+    if credits
+      p.site-footer__credits(data-credits)
+        | Photographs, for reference only:
+        each c, i in credits
+          = ' '
+          a(href=c.href)= c.who
+          = ` (${c.licence}, Wikimedia Commons)${i < credits.length - 1 ? ',' : '.'}`

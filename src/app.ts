@@ -16,7 +16,16 @@ export function createApp() {
   app.set('views', path.join(root, 'views'));
   app.disable('x-powered-by');
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          'style-src': ["'self'", 'https://fonts.googleapis.com'],
+          'font-src': ["'self'", 'https://fonts.gstatic.com'],
+        },
+      },
+    }),
+  );
   app.use(compression());
   app.use(morgan(isProd ? 'combined' : 'dev'));
   app.use(express.urlencoded({ extended: false }));

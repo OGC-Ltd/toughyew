@@ -1,18 +1,20 @@
-include ../partials/mixins
-
 doctype html
-html(lang="en")
+html(lang="en-GB")
   head
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width, initial-scale=1")
     title #{title ? `${title} · ${appName}` : appName}
-    meta(name="description" content=description || `${appName} — Node, TypeScript, Pug and SCSS.`)
-    link(rel="icon" href="/img/favicon.svg" type="image/svg+xml")
+    meta(name="description" content="Tough Yew Co. builds new homes, extensions and bespoke joinery with honest materials and careful detail.")
+    meta(name="theme-color" content="#1E5631")
+    link(rel="icon" href="/img/brand/mark.png" type="image/png")
+    link(rel="preconnect" href="https://fonts.googleapis.com")
+    link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+    link(rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=Archivo:wght@400;600&display=swap")
     link(rel="stylesheet" href="/css/main.css")
-    block head
   body
     a.skip-link(href="#main") Skip to content
     include ../partials/header
-    main#main.container
+    main#main
       block content
     include ../partials/footer
+    script(src="/js/slots.js" defer)

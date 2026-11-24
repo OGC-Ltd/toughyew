@@ -1,40 +1,59 @@
-import { Router } from 'express';
+import { appendFile, mkdir } from 'node:fs/promises';
+import path from 'node:path';
+import { Router, type Response } from 'express';
+import { credits, faqs, projectTypes, services, steps, timeframes } from '../content.js';
 
 export const router = Router();
 
-const features = [
-  { title: 'TypeScript', body: 'Strict, ESM, compiled with tsc and run in dev with tsx watch.' },
-  { title: 'Pug', body: 'Layouts, partials and mixins render every page on the server.' },
-  { title: 'SCSS', body: 'Tokens, base and component partials compiled by Dart Sass.' },
-];
+type Values = Record<'name' | 'email' | 'phone' | 'location' | 'type' | 'start' | 'budget' | 'message' | 'consent', string>;
+const empty: Values = { name: '', email: '', phone: '', location: '', type: '', start: '', budget: '', message: '', consent: '' };
 
-router.get('/', (_req, res) => {
-  res.render('pages/home', { title: 'Home', features });
+const dataDir = path.resolve(process.cwd(), 'data');
+
+function renderHome(res: Response, opts: { values?: Values; errors?: Partial<Values>; sent?: boolean } = {}) {
+  const errors = opts.errors ?? {};
+  res.render('pages/home', {
+    title: 'New builds, extensions and bespoke joinery',
+    services, steps, faqs, projectTypes, timeframes, credits,
+    values: opts.values ?? empty,
+    errors,
+    firstError: Object.keys(errors)[0],
+    sent: opts.sent ?? false,
+  });
+}
+
+router.get('/', (req, res) => {
+  const type = String(req.query.type ?? '');
+  const values = { ...empty, type: projectTypes.some((t) => t.value === type) ? type : '' };
+  renderHome(res, { values, sent: req.query.sent === '1' });
 });
 
-router.get('/about', (_req, res) => {
-  res.render('pages/about', { title: 'About' });
-});
+router.post('/enquire', async (req, res, next) => {
+  const body = req.body ?? {};
+  const values = Object.fromEntries(
+    Object.keys(empty).map((k) => [k, String(body[k] ?? '').trim().slice(0, 4000)]),
+  ) as Values;
 
-router.get('/contact', (_req, res) => {
-  res.render('pages/contact', { title: 'Contact', values: {}, errors: {} });
-});
-
-router.post('/contact', (req, res) => {
-  const values = {
-    name: String(req.body?.name ?? '').trim(),
-    email: String(req.body?.email ?? '').trim(),
-    message: String(req.body?.message ?? '').trim(),
-  };
-  const errors: Record<string, string> = {};
-  if (!values.name) errors.name = 'Tell us your name.';
-  if (!/^\S+@\S+\.\S+$/.test(values.email)) errors.email = 'Enter a valid email address.';
-  if (values.message.length < 10) errors.message = 'A few more words, please (10+ characters).';
+  const errors: Partial<Values> = {};
+  if (!values.name) errors.name = 'Add your name so we know who to reply to.';
+  if (!/^\S+@\S+\.\S+$/.test(values.email)) errors.email = 'Add an email address we can reply to, like name@example.com.';
+  if (!values.location) errors.location = 'Add the town or postcode of the project.';
+  if (!projectTypes.some((t) => t.value === values.type)) errors.type = 'Choose the kind of project.';
+  if (values.message.length < 10) errors.message = 'Tell us a little about the project, a sentence or two is enough.';
+  if (values.consent !== 'yes') errors.consent = 'Tick the box so we may contact you about this enquiry.';
 
   if (Object.keys(errors).length) {
-    return res.status(422).render('pages/contact', { title: 'Contact', values, errors });
+    res.status(422);
+    return renderHome(res, { values, errors });
   }
-  res.render('pages/contact', { title: 'Contact', values: {}, errors: {}, sent: true });
+
+  try {
+    await mkdir(dataDir, { recursive: true });
+    await appendFile(path.join(dataDir, 'enquiries.jsonl'), JSON.stringify({ at: new Date().toISOString(), ...values }) + '\n');
+    res.redirect(303, '/?sent=1#enquire');
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.get('/health', (_req, res) => {
