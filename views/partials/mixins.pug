@@ -1,0 +1,16 @@
+mixin card(heading)
+  article.card
+    h3.card__title= heading
+    .card__body
+      block
+
+mixin field(name, label, opts = {})
+  - const err = errors && errors[name]
+  .field(class={ 'field--error': !!err })
+    label(for=name)= label
+    if opts.multiline
+      textarea(id=name name=name rows="5" aria-invalid=err ? 'true' : undefined aria-describedby=err ? `${name}-error` : undefined)= values[name] || ''
+    else
+      input(id=name name=name type=opts.type || 'text' value=values[name] || '' autocomplete=opts.autocomplete aria-invalid=err ? 'true' : undefined aria-describedby=err ? `${name}-error` : undefined)
+    if err
+      p.field__error(id=`${name}-error`)= err

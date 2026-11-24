@@ -1,0 +1,16 @@
+extends ../layouts/base
+
+block content
+  section.prose
+    h1 About
+    p This page is a plain Pug template that extends the base layout. Add a route in
+      code src/routes/index.ts
+      |  and a view in
+      code views/pages/
+      |  to make a new page.
+    h2 Project layout
+    ul
+      li #[code src/] — TypeScript server (Express 5)
+      li #[code src/styles/] — SCSS, compiled to #[code public/css/main.css]
+      li #[code views/] — Pug layouts, partials, mixins and pages
+      li #[code public/] — static files served as-is

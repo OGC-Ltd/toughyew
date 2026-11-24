@@ -1,0 +1,12 @@
+extends ../layouts/base
+
+block content
+  section.prose
+    h1 Contact
+    if sent
+      .notice.notice--success(role="status") Thanks — your message was received.
+    form.form(method="post" action="/contact" novalidate)
+      +field('name', 'Name', { autocomplete: 'name' })
+      +field('email', 'Email', { type: 'email', autocomplete: 'email' })
+      +field('message', 'Message', { multiline: true })
+      button.btn.btn--primary(type="submit") Send message

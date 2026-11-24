@@ -1,0 +1,9 @@
+extends ../layouts/base
+
+block content
+  section.prose.center
+    p.eyebrow 500
+    h1 Something went wrong.
+    if message
+      pre.error-detail= message
+    a.btn.btn--primary(href="/") Back home

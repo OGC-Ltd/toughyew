@@ -1,0 +1,10 @@
+@use 'tokens' as *;
+
+@mixin md-up {
+  @media (min-width: $breakpoint-md) { @content; }
+}
+
+@mixin focus-ring {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
