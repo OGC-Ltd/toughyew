@@ -1,7 +1,7 @@
 import { appendFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { Router, type Response } from 'express';
-import { credits, faqs, projectTypes, services, steps, timeframes } from '../content.js';
+import { credits, faqs, gallery, photos, projectTypes, services, slides, steps, timeframes } from '../content.js';
 
 export const router = Router();
 
@@ -14,7 +14,8 @@ function renderHome(res: Response, opts: { values?: Values; errors?: Partial<Val
   const errors = opts.errors ?? {};
   res.render('pages/home', {
     title: 'New builds, extensions and bespoke joinery',
-    services, steps, faqs, projectTypes, timeframes, credits,
+    services, steps, faqs, projectTypes, timeframes, credits, slides, gallery, photos,
+    pageClass: 'page-home',
     values: opts.values ?? empty,
     errors,
     firstError: Object.keys(errors)[0],

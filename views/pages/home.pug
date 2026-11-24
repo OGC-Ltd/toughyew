@@ -20,93 +20,140 @@ mixin field(name, label, opts = {})
     p.field__error(id=`e-${name}`)= err || ''
 
 block content
-  section.hero
-    .hero__text
-      .hero__copy
-        img.hero__mark(src="/img/brand/mark-light.png" alt="" width="505" height="500")
-        h1 Strong roots. Exceptional spaces.
-        p.lead New builds, extensions and bespoke joinery, made to stand for generations.
-        .hero__actions
-          a.btn.btn--on-field(href="#enquire") Tell us about your project
-          a.link-action(href="#process") See how we work
-    .hero__picture(data-slot="hero" data-alt="A finished Tough Yew Co. home, photographed outside")
-      img(src="/img/photos/house-1920.jpg" srcset="/img/photos/house-960.jpg 960w, /img/photos/house-1920.jpg 1920w" sizes="(max-width: 60rem) 100vw, 58vw" width="1469" height="2886" alt="A two-storey timber-clad house with tall black-framed windows and a pergola" fetchpriority="high")
+  //- 1. Hero: full-bleed slideshow
+  section.hero(aria-roledescription="carousel" aria-label="Our kind of work" data-slideshow)
+    .hero__slides
+      each s, i in slides
+        figure.hero__slide(class=i === 0 ? 'is-active' : undefined aria-roledescription="slide" aria-label=`${i + 1} of ${slides.length}` aria-hidden=i === 0 ? undefined : 'true')
+          +picture(s.photo, { eager: i === 0 })
+          figcaption.hero__caption= s.caption
+    .hero__scrim
+    .container.hero__content
+      img.hero__mark(src="/img/brand/mark-light.png" alt="" width="505" height="500")
+      h1 Strong roots. Exceptional spaces.
+      p.lead New builds, extensions and bespoke joinery, made to stand for generations.
+      .hero__actions
+        a.btn.btn--primary.btn--lg(href="#enquire")
+          span Tell us about your project
+          +icon('arrow-right')
+        a.btn.btn--ghost-light.btn--lg(href="#services") Explore what we do
+    .container.hero__controls(data-controls hidden)
+      .hero__dots(role="group" aria-label="Choose a slide")
+        each s, i in slides
+          button.hero__dot(type="button" aria-label=`Show slide ${i + 1}: ${s.caption}` aria-current=i === 0 ? 'true' : undefined data-goto=i)
+            span.hero__dot-fill
+      button.hero__pause(type="button" data-pause aria-label="Pause the slideshow")
+        span.hero__pause-icon.hero__pause-icon--pause
+          +icon('pause')
+        span.hero__pause-icon.hero__pause-icon--play
+          +icon('play')
 
+  //- 2. Welcome
+  section#about.welcome
+    .container.welcome__inner(data-reveal)
+      h2 Built to stand for generations.
+      p.lead Like the yew, strength comes from the roots. We build on sound foundations, with honest materials and care in every detail, so the place you live works beautifully and lasts.
+      p.welcome__cta
+        a.text-link(href="#enquire")
+          span Let’s build something that lasts
+          +icon('arrow-right')
+
+  //- 3. Services: card grid
   section#services.services
     .container
-      .head-split
+      .section-head(data-reveal)
         h2 Your vision. Our craft.
-        p.lead From bare ground, an existing house or a single staircase.
-      ol.services__list
-        each s in services
-          li.service
-            h3= s.title
-            p= s.body
-            a.service__link(href=`/?type=${s.slug}#enquire`) Enquire about #{s.title.toLowerCase()}
+        a.text-link(href="#enquire")
+          span Start a project
+          +icon('arrow-right')
+      ul.cards
+        each s, i in services
+          li.card(data-reveal style=`--i: ${i}`)
+            a.card__link(href=`/?type=${s.slug}#enquire`)
+              .card__media
+                +picture(s.photo, { sizes: '(max-width: 60rem) 100vw, 33vw' })
+              .card__body
+                h3= s.title
+                p= s.body
+                span.card__more
+                  | Enquire about #{s.title.toLowerCase()}
+                  +icon('arrow-right')
 
-  section.craft
-    .container.craft__inner
-      .craft__picture(data-slot="craft" data-alt="Your own team at work in the workshop or on site")
-        img(src="/img/photos/carpenter-1920.jpg" srcset="/img/photos/carpenter-960.jpg 960w, /img/photos/carpenter-1920.jpg 1920w" sizes="(max-width: 60rem) 100vw, 45vw" width="1920" height="1280" alt="A carpenter marking a dark timber board with a red pencil and a square" loading="lazy")
-      .craft__text
+  //- 4. Feature split
+  section.feature
+    .container.feature__inner
+      .feature__media(data-reveal="wipe")
+        +picture(photos.carpenter, { sizes: '(max-width: 60rem) 100vw, 50vw' })
+      .feature__text(data-reveal)
         h2 Good building. No shortcuts.
-        p.lead Like the yew, strength comes from the roots: sound foundations, honest materials and care in every detail.
-        p We listen carefully, plan thoroughly and treat your home as a home.
-        dl.craft__facts
+        p.lead We listen carefully, plan thoroughly and treat your home as a home.
+        dl.feature__facts
           div
             dt Honest materials
             dd Chosen to last, never to cut a corner.
           div
             dt Thoughtful details
             dd The finish gets the same care as the frame.
+        .feature__actions
+          a.btn.btn--primary(href="#process") How we work
+          a.btn.btn--outline(href="#inspiration") See inspiration
 
+  //- 5. Process: step cards
   section#process.process
     .container
-      .head-split
+      .section-head(data-reveal)
         h2 Solid from the start.
         p.lead Four steps, from the first conversation to the handover.
-      ol.steps
-        each st in steps
-          li.step
+      ol.steps(data-steps)
+        each st, i in steps
+          li.step(data-reveal style=`--i: ${i}`)
+            span.step__tag Step #{i + 1}
             h3= st.title
             p= st.body
 
-  section#inspiration.inspiration
+  //- 6. Gallery rail
+  section#inspiration.gallery
     .container
-      .head-split
+      .section-head(data-reveal)
         h2 Spaces to inspire.
-        p.lead Oak, timber and the joinery that holds a room together.
-      .inspiration__grid
-        figure.frame.frame--lead
-          .frame__picture(data-slot="inspire-1" data-alt="A Tough Yew Co. staircase or piece of joinery")
-            img(src="/img/photos/staircase-1920.jpg" srcset="/img/photos/staircase-960.jpg 960w, /img/photos/staircase-1920.jpg 1920w" sizes="(max-width: 60rem) 100vw, 60vw" width="1920" height="1440" alt="A carved oak staircase with a deep balustrade against a red wall" loading="lazy")
-          figcaption
-            strong Craft you can feel
-            span A carved oak staircase: joinery as the centre of a hallway.
-        figure.frame
-          .frame__picture(data-slot="inspire-2" data-alt="A finished Tough Yew Co. extension")
-            img(src="/img/photos/extension-1920.jpg" srcset="/img/photos/extension-960.jpg 960w, /img/photos/extension-1920.jpg 1920w" sizes="(max-width: 60rem) 100vw, 35vw" width="1920" height="1440" alt="An oak frame being lifted into place by a small crane beside a brick house" loading="lazy")
-          figcaption
-            strong Raised in oak
-            span An oak-framed garden room, lifted into place.
+        .gallery__nav(data-rail-nav hidden)
+          button.round-btn(type="button" data-rail-prev aria-label="Previous photographs")
+            +icon('arrow-left')
+          button.round-btn(type="button" data-rail-next aria-label="Next photographs")
+            +icon('arrow-right')
+    ul.rail(data-rail tabindex="0" aria-label="Inspiration photographs, scroll sideways")
+      each g in gallery
+        li.rail__item
+          figure
+            .rail__media
+              +picture(g.photo, { sizes: '(max-width: 40rem) 85vw, 34vw' })
+            figcaption
+              strong= g.title
+              span= g.line
 
+  //- 7. Questions
   section#questions.questions
     .container.questions__inner
-      .questions__head
+      .questions__head(data-reveal)
         h2 Let’s clear things up.
         p.lead Before you get in touch.
-      .questions__list
-        each f, i in faqs
-          details.faq
-            summary= f.q
-            p= f.a
+      .questions__list(data-reveal)
+        each f in faqs
+          details.faq(data-faq)
+            summary
+              span= f.q
+              span.faq__icon
+                +icon('plus')
+            .faq__body
+              p= f.a
 
+  //- 8. Enquiry: boxed form
   section#enquire.enquire
     .container.enquire__inner
-      .enquire__intro
+      .enquire__intro(data-reveal)
         h2 Let’s build something that lasts.
         p.lead Big idea or early days, we’d like to hear what you have in mind.
-      form.enquiry(method="post" action="/enquire" novalidate)
+      form.enquiry(method="post" action="/enquire" novalidate data-reveal)
         h3 Tell us about your project
         if sent
           p.notice(role="status") Thank you. Your enquiry has reached us and we will reply by email.
@@ -125,4 +172,6 @@ block content
           input#f-consent(type="checkbox" name="consent" value="yes" checked=(values.consent === 'yes') aria-invalid=errors.consent ? 'true' : undefined aria-describedby=errors.consent ? 'e-consent' : undefined autofocus=(firstError === 'consent'))
           label(for="f-consent") I agree to be contacted about this enquiry.
           p.field__error#e-consent= errors.consent || ''
-        button.btn.btn--primary(type="submit") Send project enquiry
+        button.btn.btn--primary.btn--lg.enquiry__submit(type="submit" data-submit)
+          span Send project enquiry
+          +icon('arrow-right')

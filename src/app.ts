@@ -21,6 +21,8 @@ export function createApp() {
       contentSecurityPolicy: {
         directives: {
           'style-src': ["'self'", 'https://fonts.googleapis.com'],
+          // Templates set per-element crop positions and stagger indexes in style attributes.
+          'style-src-attr': ["'unsafe-inline'"],
           'font-src': ["'self'", 'https://fonts.gstatic.com'],
         },
       },

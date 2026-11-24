@@ -7,13 +7,13 @@ Server-rendered Node.js app: **Express 5 + TypeScript**, **Pug** templates, **SC
 ```bash
 npm install
 cp .env.example .env
-npm run dev        # tsx watch + sass --watch, http://localhost:3100
+npm run dev        # server (tsx watch) + sass --watch + client tsc --watch, http://localhost:3100
 ```
 
 Production:
 
 ```bash
-npm run build      # sass → public/css, tsc → dist/
+npm run build      # sass → public/css, client tsc → public/js, server tsc → dist/
 npm start
 ```
 
@@ -35,3 +35,7 @@ public/              static files; css/ is generated
 ```
 
 Add a page: a route in `src/routes/index.ts` and a template in `views/pages/` that `extends ../layouts/base`.
+
+## Motion
+
+`src/client/site.ts` (compiled to `public/js/site.js`) adds the behaviour: the header that turns solid and tucks away on scroll, the hero slideshow (crossfade, slow push-in, progress dots, pause), scroll reveals, the gallery rail arrows, the FAQ ease-in and the form sending state. The page works with scripting off, and every animation stops under `prefers-reduced-motion: reduce`.

@@ -5,3 +5,4 @@ public/css/
 *.log
 data/
 .hallmark/shots/
+public/js/

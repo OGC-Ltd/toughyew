@@ -7,12 +7,13 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "concurrently -k -n server,styles -c cyan,magenta \"tsx watch --clear-screen=false src/server.ts\" \"sass --watch --no-source-map --no-charset src/styles/main.scss:public/css/main.css\"",
-    "build": "npm run build:styles && npm run build:server",
+    "dev": "concurrently -k -n server,styles,client -c cyan,magenta,yellow \"tsx watch --clear-screen=false src/server.ts\" \"sass --watch --no-source-map --no-charset src/styles/main.scss:public/css/main.css\" \"tsc -p tsconfig.client.json --watch --preserveWatchOutput\"",
+    "build": "npm run build:styles && npm run build:client && npm run build:server",
     "build:server": "tsc -p tsconfig.json",
     "build:styles": "sass --no-source-map --no-charset --style=expanded src/styles/main.scss:public/css/main.css",
     "start": "node dist/server.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.client.json --noEmit",
+    "build:client": "tsc -p tsconfig.client.json"
   },
   "dependencies": {
     "compression": "^1.8.2",

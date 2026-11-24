@@ -1,21 +1,35 @@
 footer.site-footer
   .container
-    .site-footer__mast
-      a.lockup.lockup--light(href="/" aria-label="Tough Yew Co., home")
-        img.lockup__mark(src="/img/brand/mark-light.png" alt="" width="505" height="500")
-        span.lockup__name Tough Yew Co.
-      p.site-footer__tagline Building. Lasting. Strong.
-    .site-footer__base
-      ul.site-footer__links
-        li: a(href="/#services") New builds
-        li: a(href="/#services") Renovations and extensions
-        li: a(href="/#services") Bespoke joinery
-        li: a(href="/#enquire") Start a project
+    .site-footer__grid
+      .site-footer__brand
+        a.lockup.lockup--light(href="/" aria-label="Tough Yew Co., home")
+          img.lockup__mark(src="/img/brand/mark-light.png" alt="" width="505" height="500")
+          span.lockup__name Tough Yew Co.
+        p.site-footer__tagline Building. Lasting. Strong.
+        a.btn.btn--on-dark(href="/#enquire") Start a project
+      nav.site-footer__col(aria-label="Our work")
+        h2 Our work
+        ul
+          li: a(href="/#services") New builds
+          li: a(href="/#services") Renovations and extensions
+          li: a(href="/#services") Bespoke joinery
+          li: a(href="/#inspiration") Inspiration
+      nav.site-footer__col(aria-label="Company")
+        h2 Company
+        ul
+          li: a(href="/#about") Why Tough Yew
+          li: a(href="/#process") How we work
+          li: a(href="/#questions") Questions
+          li: a(href="/#enquire") Enquire
+    .site-footer__legal
       p © #{year} Tough Yew Co.
-    if credits
-      p.site-footer__credits(data-credits)
-        | Photographs, for reference only:
-        each c, i in credits
-          = ' '
-          a(href=c.href)= c.who
-          = ` (${c.licence}, Wikimedia Commons)${i < credits.length - 1 ? ',' : '.'}`
+      if credits
+        p.site-footer__credits
+          | Photographs, for reference only, not our completed projects:
+          each c, i in credits
+            = ' '
+            a(href=c.href)= c.who
+            = ` (${c.licence})${i < credits.length - 1 ? ',' : '.'}`
+      a.to-top(href="#main" data-to-top)
+        +icon('arrow-up')
+        span Back to top

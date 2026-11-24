@@ -1,5 +1,7 @@
+include ../partials/mixins
+
 doctype html
-html(lang="en-GB")
+html(lang="en-GB" class="no-js")
   head
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width, initial-scale=1")
@@ -11,10 +13,10 @@ html(lang="en-GB")
     link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
     link(rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=Archivo:wght@400;600&display=swap")
     link(rel="stylesheet" href="/css/main.css")
-  body
+    script(src="/js/site.js" defer)
+  body(class=pageClass)
     a.skip-link(href="#main") Skip to content
     include ../partials/header
     main#main
       block content
     include ../partials/footer
-    script(src="/js/slots.js" defer)

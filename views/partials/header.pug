@@ -1,17 +1,44 @@
-- const nav = [{ href: '/#services', label: 'What we do' }, { href: '/#process', label: 'How we work' }, { href: '/#inspiration', label: 'Inspiration' }, { href: '/#questions', label: 'Questions' }]
-header.site-nav
-  .container.site-nav__inner
-    a.lockup(href="/" aria-label="Tough Yew Co., home")
-      img.lockup__mark(src="/img/brand/mark.png" alt="" width="505" height="500")
-      span.lockup__name Tough Yew Co.
-    nav.site-nav__links(aria-label="Main")
-      ul
-        each item in nav
-          li: a(href=item.href)= item.label
-    a.btn.btn--quiet.site-nav__action(href="/#enquire") Start a project
-    details.site-nav__menu
-      summary Menu
-      ul
-        each item in nav
-          li: a(href=item.href)= item.label
+- const work = [{ href: '/#services', label: 'New builds' }, { href: '/#services', label: 'Renovations and extensions' }, { href: '/#services', label: 'Bespoke joinery' }]
+- const nav = [{ href: '/#process', label: 'How we work' }, { href: '/#inspiration', label: 'Inspiration' }, { href: '/#questions', label: 'Questions' }]
+
+.masthead
+  .utility
+    .container.utility__inner
+      p.utility__tagline Building. Lasting. Strong.
+      ul.utility__links
+        li: a(href="/#questions") Questions
         li: a(href="/#enquire") Start a project
+
+  header.site-header(data-header)
+    .container.site-header__inner
+      a.lockup(href="/" aria-label="Tough Yew Co., home")
+        img.lockup__mark(src="/img/brand/mark.png" alt="" width="505" height="500")
+        img.lockup__mark.lockup__mark--light(src="/img/brand/mark-light.png" alt="" width="505" height="500")
+        span.lockup__name Tough Yew Co.
+
+      nav.primary(aria-label="Main")
+        ul.primary__list
+          li.primary__item.has-menu(data-menu)
+            button.primary__link(type="button" aria-expanded="false" aria-controls="menu-work")
+              | What we do
+              +icon('chevron-down')
+            ul.primary__menu#menu-work
+              each item in work
+                li: a(href=item.href)= item.label
+          each item in nav
+            li.primary__item: a.primary__link(href=item.href)= item.label
+        a.btn.btn--primary.primary__cta(href="/#enquire") Start a project
+
+      details.drawer(data-drawer)
+        summary.drawer__toggle
+          +icon('menu')
+          span Menu
+        .drawer__panel
+          p.drawer__label What we do
+          ul
+            each item in work
+              li: a(href=item.href)= item.label
+          ul
+            each item in nav
+              li: a(href=item.href)= item.label
+          a.btn.btn--primary(href="/#enquire") Start a project

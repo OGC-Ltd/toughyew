@@ -1,0 +1,30 @@
+mixin picture(p, opts = {})
+  img(src=`/img/photos/${p.base}-1920.jpg` srcset=`/img/photos/${p.base}-960.jpg 960w, /img/photos/${p.base}-1920.jpg 1920w` sizes=opts.sizes || '100vw' width=p.w height=p.h alt=opts.decorative ? '' : p.alt style=p.pos ? `object-position: ${p.pos}` : undefined loading=opts.eager ? undefined : 'lazy' fetchpriority=opts.eager ? 'high' : undefined decoding="async")
+
+mixin icon(name)
+  //- Lucide icons, 24px grid, stroke inherits currentColor
+  svg.icon(viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false")
+    case name
+      when 'arrow-right'
+        path(d="M5 12h14")
+        path(d="m12 5 7 7-7 7")
+      when 'arrow-left'
+        path(d="m12 19-7-7 7-7")
+        path(d="M19 12H5")
+      when 'arrow-up'
+        path(d="m5 12 7-7 7 7")
+        path(d="M12 19V5")
+      when 'chevron-down'
+        path(d="m6 9 6 6 6-6")
+      when 'plus'
+        path(d="M5 12h14")
+        path(d="M12 5v14")
+      when 'pause'
+        rect(x="14" y="4" width="4" height="16" rx="1")
+        rect(x="6" y="4" width="4" height="16" rx="1")
+      when 'play'
+        polygon(points="6 3 20 12 6 21 6 3")
+      when 'menu'
+        line(x1="4" x2="20" y1="6" y2="6")
+        line(x1="4" x2="20" y1="12" y2="12")
+        line(x1="4" x2="20" y1="18" y2="18")
