@@ -1,0 +1,204 @@
+extends ../layouts/base
+
+//- One labelled field; errors and values come from src/routes/quotes.ts.
+mixin qfield(name, label, opts = {})
+  - const err = errors[name]
+  - const described = [opts.hint ? `h-${name}` : '', err ? `e-${name}` : ''].filter(Boolean).join(' ') || undefined
+  .field(class={ 'field--wide': !!opts.wide, 'field--error': !!err })
+    label(for=`f-${name}`)
+      = label
+      if opts.optional
+        span.field__opt  (optional)
+    if opts.multiline
+      textarea(id=`f-${name}` name=name rows=opts.rows || 3 required=!opts.optional aria-invalid=err ? 'true' : undefined aria-describedby=described autofocus=(firstError === name))= values[name]
+    else if opts.options
+      select(id=`f-${name}` name=name required=!opts.optional aria-invalid=err ? 'true' : undefined aria-describedby=described autofocus=(firstError === name))
+        if opts.placeholder
+          option(value="" selected=!values[name])= opts.placeholder
+        each o in opts.options
+          option(value=o.value selected=(values[name] === o.value))= o.label
+    else
+      input(id=`f-${name}` name=name type=opts.type || 'text' value=values[name] autocomplete=opts.autocomplete inputmode=opts.inputmode list=opts.list placeholder=opts.placeholder required=!opts.optional aria-invalid=err ? 'true' : undefined aria-describedby=described autofocus=(firstError === name))
+    if opts.hint
+      p.field__hint(id=`h-${name}`)= opts.hint
+    p.field__error(id=`e-${name}`)= err || ''
+
+//- Location alert: a quotation was not sent for want of a GPS position. A modal dialog, centred over the page.
+//- The script fills the lead and steps for the reason the browser gave, and opens it; after a server refusal it
+//- arrives filled and opens on load (data-gps-open).
+mixin gpsModal(opts = {})
+  dialog.gps-modal(data-gps-error data-gps-open=opts.open ? '' : undefined aria-labelledby="gps-modal-title" aria-describedby="gps-modal-lead")
+    .gps-modal__panel
+      span.gps-modal__icon(aria-hidden="true")
+        +icon('map-pin-off')
+      .gps-modal__body
+        h2.gps-modal__title#gps-modal-title Quotation not sent
+        p.gps-modal__lead#gps-modal-lead(data-gps-lead)= opts.lead || ''
+        ol.gps-modal__steps(data-gps-steps)
+          each step in opts.steps || []
+            li= step
+        .gps-modal__actions
+          button.btn.btn--primary(type="button" data-gps-retry) Try again
+          button.btn.btn--outline(type="button" data-gps-close) Close
+      button.gps-modal__x(type="button" data-gps-close aria-label="Close")
+        +icon('x')
+
+block content
+  section.quote-hero
+    .container.quote-hero__inner
+      h1 Send us a quotation.
+      p.lead Quote for the materials we have asked about. Every price, quantity and term goes on one form, and you get a branded copy back to keep or save as a PDF.
+
+  section.quote-page
+    .container
+      form.quote-form(method="post" action="/supplier-quote" novalidate data-quote-form)
+        if hasErrors && !gpsError
+          p.notice.notice--error(role="alert") Some details need another look before this quotation can be sent. They are marked below.
+
+        fieldset.quote-form__part
+          legend
+            span.quote-form__num 01
+            | Your business
+          .quote-form__grid
+            +qfield('business', 'Business name', { autocomplete: 'organization' })
+            +qfield('pin', 'Tax PIN (KRA PIN)', { optional: true, hint: 'Shown on the quotation, as on a tax invoice.' })
+            +qfield('contact', 'Contact person', { autocomplete: 'name' })
+            +qfield('position', 'Position', { optional: true, autocomplete: 'organization-title', placeholder: 'Sales manager' })
+            +qfield('phone', 'Phone number', { type: 'tel', autocomplete: 'tel', inputmode: 'tel' })
+            +qfield('email', 'Email address', { type: 'email', autocomplete: 'email', inputmode: 'email' })
+            +qfield('address', 'Physical address', { wide: true, autocomplete: 'street-address', hint: 'Building, street or road, and a landmark if it helps us find you.' })
+            +qfield('town', 'Town or city', { autocomplete: 'address-level2' })
+            +qfield('pobox', 'P.O. Box', { optional: true, placeholder: 'P.O. Box 1234-00100' })
+
+        fieldset.quote-form__part
+          legend
+            span.quote-form__num 02
+            | The quotation
+          .quote-form__grid
+            +qfield('quoteNo', 'Your quotation number')
+            +qfield('currency', 'Currency', { options: currencies })
+            +qfield('quoteDate', 'Quotation date', { type: 'date' })
+            +qfield('validUntil', 'Prices valid until', { type: 'date' })
+            +qfield('ourRef', 'Our reference', { optional: true, hint: 'The enquiry or order number we gave you, if any.' })
+            +qfield('site', 'Deliver to (site)', { optional: true, hint: 'The project or site the materials are for.' })
+
+        fieldset.quote-form__part
+          legend
+            span.quote-form__num 03
+            | Materials and prices
+          p.quote-form__intro One line per material. Prices are per unit, before VAT; line totals are worked out for you.
+          if itemsError
+            p.field__error.quote-form__items-error(role="alert")= itemsError
+          .lines
+            .lines__head(aria-hidden="true")
+              span #
+              span Material
+              span Specification
+              span Unit
+              span Quantity
+              span Unit price
+              span Total
+              span
+            ol.lines__body(data-lines)
+              each r, i in rows
+                - const e = rowErrors[i] || {}
+                li.line(data-line)
+                  span.line__num(data-line-num)= i + 1
+                  .line__cell.line__cell--desc(class={ 'field--error': !!e.desc })
+                    label.line__label(for=`desc-${i}`) Material
+                    input(id=`desc-${i}` name="desc" value=r.desc placeholder="Cement, 50 kg" aria-invalid=e.desc ? 'true' : undefined)
+                    if e.desc
+                      p.field__error= e.desc
+                  .line__cell.line__cell--spec
+                    label.line__label(for=`spec-${i}`) Specification
+                    input(id=`spec-${i}` name="spec" value=r.spec placeholder="Brand, grade, size")
+                  .line__cell.line__cell--unit(class={ 'field--error': !!e.unit })
+                    label.line__label(for=`unit-${i}`) Unit
+                    select(id=`unit-${i}` name="unit" aria-invalid=e.unit ? 'true' : undefined)
+                      option(value="" selected=!r.unit) Unit
+                      each u in units
+                        option(value=u selected=(r.unit === u))= u
+                    if e.unit
+                      p.field__error= e.unit
+                  .line__cell.line__cell--qty(class={ 'field--error': !!e.qty })
+                    label.line__label(for=`qty-${i}`) Quantity
+                    input(id=`qty-${i}` name="qty" value=r.qty inputmode="decimal" data-qty aria-invalid=e.qty ? 'true' : undefined)
+                    if e.qty
+                      p.field__error= e.qty
+                  .line__cell.line__cell--price(class={ 'field--error': !!e.price })
+                    label.line__label(for=`price-${i}`) Unit price
+                    input(id=`price-${i}` name="price" value=r.price inputmode="decimal" data-price aria-invalid=e.price ? 'true' : undefined)
+                    if e.price
+                      p.field__error= e.price
+                  output.line__total(data-line-total aria-label="Line total") —
+                  button.line__remove(type="button" data-remove-line aria-label=`Remove line ${i + 1}`)
+                    +icon('x')
+          button.btn.btn--outline.lines__add(type="button" data-add-line hidden)
+            +icon('plus')
+            span Add another material
+
+        fieldset.quote-form__part
+          legend
+            span.quote-form__num 04
+            | Charges and totals
+          .quote-form__split
+            .quote-form__grid.quote-form__grid--charges
+              +qfield('discount', 'Discount', { optional: true, inputmode: 'decimal', hint: 'An amount off the materials, before VAT.' })
+              +qfield('delivery', 'Delivery charge', { optional: true, inputmode: 'decimal', hint: 'Leave empty if delivery is included.' })
+              +qfield('vat', 'VAT', { options: vatRates, wide: true })
+            dl.totals(data-totals aria-live="polite")
+              div
+                dt Materials
+                dd(data-total="subtotal") —
+              div
+                dt Discount
+                dd(data-total="discount") —
+              div
+                dt Delivery
+                dd(data-total="delivery") —
+              div
+                dt(data-total="vat-label") VAT
+                dd(data-total="vat") —
+              div.totals__grand
+                dt
+                  | Total
+                  span(data-total="currency")
+                dd(data-total="total") —
+
+        fieldset.quote-form__part
+          legend
+            span.quote-form__num 05
+            | Terms
+          .quote-form__grid
+            +qfield('leadTime', 'Delivery time', { placeholder: '3 days from order' })
+            +qfield('payment', 'Payment terms', { list: 'payment-terms', placeholder: 'Choose or type your own' })
+            datalist#payment-terms
+              each t in paymentTerms
+                option(value=t)
+            +qfield('payDetails', 'How to pay you', { optional: true, multiline: true, wide: true, hint: 'Bank name, account name and number, or M-Pesa paybill and account.' })
+            +qfield('notes', 'Other notes', { optional: true, multiline: true, wide: true, hint: 'Warranty, stock limits, offloading, anything else we should know.' })
+
+        fieldset.quote-form__part
+          legend
+            span.quote-form__num 06
+            | Confirm and send
+          .quote-form__grid
+            +qfield('signName', 'Your name', { autocomplete: 'name', hint: 'The person sending this quotation.' })
+          .check(class={ 'field--error': !!errors.confirm })
+            input#f-confirm(type="checkbox" name="confirm" value="yes" checked=(values.confirm === 'yes') aria-invalid=errors.confirm ? 'true' : undefined aria-describedby=errors.confirm ? 'e-confirm' : undefined autofocus=(firstError === 'confirm'))
+            label(for="f-confirm") I confirm these prices and details are correct and that we can supply on these terms.
+            p.field__error#e-confirm= errors.confirm || ''
+          //- Location: the script fills these from the device's GPS just before sending; without them the server refuses the quotation.
+          input(type="hidden" name="gpsLat" data-gps="lat")
+          input(type="hidden" name="gpsLng" data-gps="lng")
+          input(type="hidden" name="gpsAccuracy" data-gps="accuracy")
+          input(type="hidden" name="gpsAt" data-gps="at")
+          noscript
+            p.notice.notice--error This form needs JavaScript switched on to send a quotation.
+          if gpsError
+            +gpsModal({ open: true, lead: 'A quotation can only be sent with your location.', steps: ['Press Try again.', 'When your browser asks to use your location, choose Allow.'] })
+          else
+            +gpsModal()
+          button.btn.btn--primary.btn--lg.quote-form__submit(type="submit" data-submit)
+            span Send quotation
+            +icon('arrow-right')

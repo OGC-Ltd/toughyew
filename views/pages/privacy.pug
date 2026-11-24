@@ -1,0 +1,76 @@
+extends ../layouts/base
+
+//- Privacy notice. Keep it in step with what the site records: src/tracking.ts, src/routes/index.ts, src/routes/quotes.ts.
+block content
+  section.quote-hero
+    .container.quote-hero__inner
+      h1 Privacy notice.
+      p.lead What this website records about you, why, and what you can ask us to do with it. Last updated #{updated}.
+
+  section.privacy
+    .container.privacy__inner
+      nav.privacy__toc(aria-label="On this page")
+        ol
+          li: a(href="#who") Who we are
+          li: a(href="#visits") When you visit
+          li: a(href="#enquiries") Project enquiries
+          li: a(href="#quotations") Supplier quotations
+          li: a(href="#use") How we use it
+          li: a(href="#sharing") Who sees it
+          li: a(href="#keeping") How long we keep it
+          li: a(href="#rights") Your rights
+          li: a(href="#credits") Credits
+
+      .privacy__body
+        section#who
+          h2 Who we are
+          p Tough Yew Co. builds new homes, renovations and extensions, and bespoke joinery. We are responsible for the information this website collects. To ask about it, or to use any of the rights below, contact us through the #[a(href="/#enquire") enquiry form] and say it is about privacy.
+
+        section#visits
+          h2 When you visit this website
+          p Each time a page opens, we record:
+          ul
+            li your internet (IP) address;
+            li the approximate place that address belongs to (usually a town or a country), worked out on our own server;
+            li the page you opened and, where your browser says so, the page that linked to it;
+            li the type of browser and device you are using.
+          p We do not use cookies, advertising networks or outside analytics services, and we do not track you across other websites.
+
+        section#enquiries
+          h2 Project enquiries
+          p When you send us an enquiry, we keep what you write in the form: your name, email address, phone number if you give it, the project’s location, type, timing and budget, and your message.
+
+        section#quotations
+          h2 Supplier quotations
+          p When a supplier sends us a quotation, we keep everything in the form: the business and contact details, tax PIN, address, the materials, quantities and prices, the terms and payment details, and the name of the person who sent it.
+          p We also record where the quotation was sent from:
+          ul
+            li #[strong the device’s location (GPS)], which your browser asks your permission to share. A quotation cannot be sent without it;
+            li your internet (IP) address and its approximate place;
+            li the type of browser and device.
+          p If a quotation cannot be sent because location was refused or could not be found, we record that attempt: the reason, the business name, contact, email and phone you had entered by then, and your IP address with its approximate place.
+
+        section#use
+          h2 How we use it
+          ul
+            li To reply to enquiries and plan the work you ask about.
+            li To compare and act on suppliers’ quotations, and to keep them with our purchase records.
+            li To confirm where a quotation came from, so we deal with real businesses at real addresses and can spot false or misdirected quotations.
+            li To keep the website secure and see which pages people use.
+          p We rely on your consent where we ask for it (your location, and the agreement on the enquiry form), on taking steps towards a contract you have asked about, and on our legitimate interest in running a safe website and genuine supply arrangements.
+
+        section#sharing
+          h2 Who sees it
+          p Only Tough Yew Co. staff. We do not sell your information or share it for marketing. The IP-address lookup happens on our own server, so your address is not sent to anyone to place it. Where we send ourselves a copy of an enquiry or quotation by email, it passes through our email provider. We will share information if the law requires it.
+
+        section#keeping
+          h2 How long we keep it
+          p We keep enquiries and quotations for as long as we need them for the project or supply arrangement and for our accounts and tax records. Records of website visits and of quotations that could not be sent are kept for no longer than 12 months.
+
+        section#rights
+          h2 Your rights
+          p Under Kenya’s Data Protection Act, 2019, you may ask us to tell you what we hold about you and give you a copy, to correct it, to delete it, or to stop using it. You may withdraw your consent at any time, although we cannot accept a quotation without the location that comes with it. If you are not satisfied with our answer, you may complain to the #[a(href="https://www.odpc.go.ke" rel="noopener") Office of the Data Protection Commissioner].
+
+        section#credits
+          h2 Credits
+          p This site includes GeoLite2 data created by MaxMind, available from #[a(href="https://www.maxmind.com" rel="noopener") maxmind.com], used to estimate the place an IP address belongs to.

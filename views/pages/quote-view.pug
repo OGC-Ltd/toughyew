@@ -1,0 +1,164 @@
+extends ../layouts/base
+
+//- A received supplier quotation as a branded document; prints to A4 (see .quote-doc in main.scss).
+block content
+  section.quote-page.quote-page--view
+    .container
+      .quote-actions
+        if sent
+          p.notice(role="status") Thank you. Your quotation has reached Tough Yew Co. Keep this page, or print it or save it as a PDF for your records.
+        .quote-actions__buttons
+          button.btn.btn--primary(type="button" data-print hidden)
+            +icon('printer')
+            span Print or save as PDF
+          if staff
+            a.btn.btn--outline(href="/staff/quotations") Back to all quotations
+            a.btn.btn--outline(href=`mailto:${q.email}?subject=${encodeURIComponent(`Your quotation ${q.quoteNo}`)}`) Email #{q.contact}
+          else
+            a.btn.btn--outline(href="/supplier-quote") Send another quotation
+
+      if staff
+        //- Staff only: never shown to the supplier, and kept off the printed quotation.
+        section.quote-origin(aria-labelledby="origin-title")
+          h2#origin-title Where it was sent from
+          dl
+            div
+              dt Device location (GPS)
+              dd
+                if q.gps
+                  a(href=`https://www.google.com/maps?q=${q.gps.lat},${q.gps.lng}` target="_blank" rel="noopener noreferrer") #{q.gps.lat.toFixed(6)}, #{q.gps.lng.toFixed(6)}
+                  span.quote-origin__sub
+                    if q.gps.accuracy >= 0
+                      | Accurate to about #{q.gps.accuracy} m
+                    if q.gps.at
+                      | · read #{day(q.gps.at)}
+                else
+                  | Not recorded (sent before location was required)
+            div
+              dt Internet (IP) address
+              dd= q.ip || 'Not recorded'
+            div
+              dt Network location (from the IP address)
+              dd
+                if q.ipLocation
+                  | #{[q.ipLocation.city, q.ipLocation.region, q.ipLocation.country].filter(Boolean).join(', ')}
+                  span.quote-origin__sub Approximate: often the town of the internet provider, not the supplier.
+                else
+                  | Unknown (local or private address)
+            if q.userAgent
+              div
+                dt Device and browser
+                dd.quote-origin__ua= q.userAgent
+
+      article.quote-doc
+        header.quote-doc__head
+          .quote-doc__brand
+            img.quote-doc__mark(src="/img/brand/mark.png" alt="" width="505" height="500")
+            div
+              p.quote-doc__name Tough Yew Co.
+              p.quote-doc__tag Building. Lasting. Strong.
+          .quote-doc__title
+            h1 Quotation
+            p № #{q.quoteNo}
+
+        .quote-doc__parties
+          section
+            h2 From (supplier)
+            p.quote-doc__strong= q.business
+            p= q.address
+            p= q.town
+            if q.pobox
+              p= q.pobox
+            if q.pin
+              p Tax PIN: #{q.pin}
+            p.quote-doc__gap
+              | #{q.contact}
+              if q.position
+                | , #{q.position}
+            p= q.phone
+            p= q.email
+          section
+            h2 To (buyer)
+            p.quote-doc__strong Tough Yew Co.
+            p New builds, renovations and bespoke joinery
+            if q.site
+              p.quote-doc__gap Deliver to: #{q.site}
+          dl.quote-doc__meta
+            div
+              dt Quotation date
+              dd= day(q.quoteDate)
+            div
+              dt Valid until
+              dd= day(q.validUntil)
+            if q.ourRef
+              div
+                dt Our reference
+                dd= q.ourRef
+            div
+              dt Currency
+              dd= q.currency
+            div
+              dt Received
+              dd= day(q.receivedAt)
+
+        table.quote-doc__items
+          thead
+            tr
+              th(scope="col") #
+              th(scope="col") Material
+              th(scope="col") Unit
+              th.num(scope="col") Qty
+              th.num(scope="col") Unit price
+              th.num(scope="col") Total
+          tbody
+            each it, i in q.items
+              tr
+                td= i + 1
+                td
+                  span.quote-doc__strong= it.desc
+                  if it.spec
+                    span.quote-doc__spec= it.spec
+                td= it.unit
+                td.num= qty(it.qty)
+                td.num= fmt(it.unitPrice)
+                td.num= fmt(it.total)
+
+        .quote-doc__foot
+          .quote-doc__terms
+            h2 Terms
+            dl
+              div
+                dt Delivery time
+                dd= q.leadTime
+              div
+                dt Payment
+                dd= q.payment
+              if q.payDetails
+                div
+                  dt How to pay
+                  dd.quote-doc__pre= q.payDetails
+              if q.notes
+                div
+                  dt Notes
+                  dd.quote-doc__pre= q.notes
+          dl.quote-doc__totals
+            div
+              dt Materials
+              dd= fmt(q.totals.subtotal)
+            if q.totals.discount
+              div
+                dt Discount
+                dd − #{fmt(q.totals.discount)}
+            div
+              dt Delivery
+              dd= q.totals.delivery ? fmt(q.totals.delivery) : 'Included'
+            div
+              dt= q.totals.vatRate ? `VAT ${q.totals.vatRate}%` : 'VAT'
+              dd= q.totals.vatRate ? fmt(q.totals.vat) : 'Not charged'
+            div.quote-doc__grand
+              dt Total (#{q.currency})
+              dd= fmt(q.totals.total)
+
+        footer.quote-doc__sign
+          p Confirmed correct by #[strong= q.signName] for #{q.business}.
+          p.quote-doc__ref Reference #{q.id}

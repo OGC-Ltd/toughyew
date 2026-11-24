@@ -1,14 +1,14 @@
 import { appendFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
+import { dataDir } from '../paths.js';
 import { Router, type Response } from 'express';
-import { credits, faqs, gallery, photos, projectTypes, services, slides, steps, timeframes } from '../content.js';
+import { credits, faqs, gallery, photos, servicePages, projectTypes, services, slides, steps, timeframes } from '../content.js';
 
 export const router = Router();
 
 type Values = Record<'name' | 'email' | 'phone' | 'location' | 'type' | 'start' | 'budget' | 'message' | 'consent', string>;
 const empty: Values = { name: '', email: '', phone: '', location: '', type: '', start: '', budget: '', message: '', consent: '' };
 
-const dataDir = path.resolve(process.cwd(), 'data');
 
 function renderHome(res: Response, opts: { values?: Values; errors?: Partial<Values>; sent?: boolean } = {}) {
   const errors = opts.errors ?? {};
@@ -28,6 +28,19 @@ router.get('/', (req, res) => {
   const values = { ...empty, type: projectTypes.some((t) => t.value === type) ? type : '' };
   renderHome(res, { values, sent: req.query.sent === '1' });
 });
+
+// One page per service, all from views/pages/service.pug.
+for (const pg of servicePages) {
+  router.get(pg.path, (_req, res) => {
+    res.render('pages/service', {
+      title: pg.name,
+      description: `${pg.name} by Tough Yew Co.: what we do, what is included, the stages from first visit to handover, and photographs.`,
+      pageClass: 'page-overlay',
+      pg,
+      credits,
+    });
+  });
+}
 
 router.post('/enquire', async (req, res, next) => {
   const body = req.body ?? {};
@@ -55,6 +68,14 @@ router.post('/enquire', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+router.get('/privacy', (_req, res) => {
+  res.render('pages/privacy', {
+    title: 'Privacy notice',
+    description: 'What the Tough Yew Co. website records about visitors, customers and suppliers, why, and your rights.',
+    updated: '24 November 2026',
+  });
 });
 
 router.get('/health', (_req, res) => {

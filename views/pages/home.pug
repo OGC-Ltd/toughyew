@@ -26,7 +26,7 @@ block content
       each s, i in slides
         figure.hero__slide(class=i === 0 ? 'is-active' : undefined aria-roledescription="slide" aria-label=`${i + 1} of ${slides.length}` aria-hidden=i === 0 ? undefined : 'true')
           +picture(s.photo, { eager: i === 0 })
-          figcaption.hero__caption= s.caption
+          figcaption.visually-hidden= s.caption
     .hero__scrim
     .container.hero__content
       h1 Strong roots. Exceptional spaces.
@@ -46,6 +46,8 @@ block content
           +icon('pause')
         span.hero__pause-icon.hero__pause-icon--play
           +icon('play')
+      //- The active slide's caption, on the same line as the controls; screen readers hear the figcaption.
+      p.hero__now(aria-hidden="true" data-caption)= slides[0].caption
 
   //- 2. Welcome
   section#about.welcome
@@ -68,21 +70,24 @@ block content
       ul.cards
         each s, i in services
           li.card(data-reveal style=`--i: ${i}`)
-            a.card__link(href=`/?type=${s.slug}#enquire`)
+            a.card__link(href=s.href || `/?type=${s.slug}#enquire`)
               .card__media
                 +picture(s.photo, { sizes: '(max-width: 60rem) 100vw, 33vw' })
               .card__body
                 h3= s.title
                 p= s.body
                 span.card__more
-                  | Enquire about #{s.title.toLowerCase()}
+                  = s.more || `Enquire about ${s.title.toLowerCase()}`
                   +icon('arrow-right')
 
   //- 4. Feature split
   section.feature
     .container.feature__inner
-      .feature__media(data-reveal="wipe")
-        +picture(photos.carpenter, { sizes: '(max-width: 60rem) 100vw, 50vw' })
+      //- Three photographs stacked: the pool tall on the left, the kitchen and the shuttered windows beside it
+      .feature__media.feature__media--stack
+        each p, i in [photos.gardenPool, photos.kitchenHardwood, photos.balcony]
+          .feature__tile(data-reveal="wipe" style=`--i: ${i}`)
+            +picture(p, { sizes: '(max-width: 60rem) 50vw, 25vw' })
       .feature__text(data-reveal)
         h2 Good building. No shortcuts.
         p.lead We listen carefully, plan thoroughly and treat your home as a home.
@@ -115,20 +120,26 @@ block content
     .container
       .section-head(data-reveal)
         h2 Spaces to inspire.
-        .gallery__nav(data-rail-nav hidden)
-          button.round-btn(type="button" data-rail-prev aria-label="Previous photographs")
-            +icon('arrow-left')
-          button.round-btn(type="button" data-rail-next aria-label="Next photographs")
-            +icon('arrow-right')
-    ul.rail(data-rail tabindex="0" aria-label="Inspiration photographs, scroll sideways")
-      each g in gallery
-        li.rail__item
-          figure
-            .rail__media
-              +picture(g.photo, { sizes: '(max-width: 40rem) 85vw, 34vw' })
-            figcaption
-              strong= g.title
-              span= g.line
+        button.round-btn.gallery__pause(type="button" data-rail-pause data-rail-ctrl hidden aria-label="Pause the gallery")
+          span.gallery__pause-icon.gallery__pause-icon--pause
+            +icon('pause')
+          span.gallery__pause-icon.gallery__pause-icon--play
+            +icon('play')
+      //- Three photographs in view; the arrows sit on the rail's left and right edges.
+      .gallery__stage(data-rail-stage)
+        ul.rail(data-rail tabindex="0" aria-label="Inspiration photographs, scroll sideways")
+          each g in gallery
+            li.rail__item
+              figure
+                .rail__media
+                  +picture(g.photo, { sizes: '(max-width: 40rem) 92vw, (max-width: 60rem) 31vw, 440px' })
+                figcaption
+                  strong= g.title
+                  span= g.line
+        button.round-btn.gallery__arrow.gallery__arrow--prev(type="button" data-rail-prev data-rail-ctrl hidden aria-label="Previous photographs")
+          +icon('arrow-left')
+        button.round-btn.gallery__arrow.gallery__arrow--next(type="button" data-rail-next data-rail-ctrl hidden aria-label="Next photographs")
+          +icon('arrow-right')
 
   //- 7. Questions
   section#questions.questions
@@ -169,7 +180,7 @@ block content
           +field('message', 'Tell us more', { multiline: true, wide: true })
         .check(class={ 'field--error': !!errors.consent })
           input#f-consent(type="checkbox" name="consent" value="yes" checked=(values.consent === 'yes') aria-invalid=errors.consent ? 'true' : undefined aria-describedby=errors.consent ? 'e-consent' : undefined autofocus=(firstError === 'consent'))
-          label(for="f-consent") I agree to be contacted about this enquiry.
+          label(for="f-consent") I agree to be contacted about this enquiry (#[a(href="/privacy#enquiries") privacy notice]).
           p.field__error#e-consent= errors.consent || ''
         button.btn.btn--primary.btn--lg.enquiry__submit(type="submit" data-submit)
           span Send project enquiry

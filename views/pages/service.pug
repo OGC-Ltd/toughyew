@@ -1,0 +1,168 @@
+extends ../layouts/base
+
+//- One template for every service page (new builds, renovations, joinery); content from servicePages in src/content.ts.
+block content
+  - const enquire = `/?type=${pg.slug}#enquire`
+  - const few = pg.photos.length <= 4
+
+  //- 1. Page hero: one photograph, the header floats over it
+  section.page-hero
+    .page-hero__media
+      +picture(pg.hero, { eager: true, decorative: true })
+    .page-hero__scrim
+    .container.page-hero__content
+      nav.crumbs(aria-label="Breadcrumb")
+        ol
+          li: a(href="/") Home
+          li: a(href="/#services") What we do
+          li(aria-current="page")= pg.name
+      h1= pg.name
+      p.lead= pg.heroLead
+      .page-hero__actions
+        a.btn.btn--primary.btn--lg(href=enquire)
+          span= pg.heroAction
+          +icon('arrow-right')
+        a.btn.btn--ghost-light.btn--lg(href="#photos") See the photographs
+
+  //- In-page contents
+  nav.on-page(aria-label="On this page")
+    .container
+      ul
+        li: a(href="#photos") Photographs
+        li: a(href="#kinds")= pg.kinds.title.replace(/\.$/, '')
+        li: a(href="#included") What’s included
+        li: a(href="#stages") Stages
+        li: a(href="#materials") Materials
+        li: a(href="#questions") Questions
+
+  //- 2. Intro and three facts
+  section.nb-intro
+    .container.nb-intro__inner
+      .nb-intro__text(data-reveal)
+        h2= pg.intro.title
+        p.lead= pg.intro.lead
+      dl.nb-intro__facts
+        each f, i in pg.facts
+          div(data-reveal style=`--i: ${i}`)
+            dt= f.label
+            dd= f.body
+
+  //- 3. This service's photographs, opening in a viewer
+  section#photos.nb-photos
+    .container
+      .section-head(data-reveal)
+        h2 Photographs.
+        p.lead #{pg.photosLead} Select one to see it larger.
+      //- With the lead photograph taking two places, a count that leaves one empty slot on the last row
+      //- (5, 8, 11…) widens the second-to-last photograph to fill it.
+      ul.photo-grid(class={ 'photo-grid--even': few, 'photo-grid--fill': !few && (pg.photos.length - 3) % 3 === 2 })
+        each p, i in pg.photos
+          li.photo-grid__item(data-reveal style=`--i: ${i % 3}`)
+            a.photo-grid__link(href=`/img/photos/${p.photo.base}-1920.jpg` data-viewer-item=i data-caption=p.caption data-alt=p.photo.alt)
+              .photo-grid__media
+                +picture(p.photo, { sizes: few ? '(max-width: 40rem) 100vw, 50vw' : (i === 0 ? '(max-width: 40rem) 100vw, 66vw' : '(max-width: 40rem) 100vw, 33vw') })
+              span.photo-grid__caption= p.caption
+
+    dialog.viewer(data-viewer aria-label="Photograph viewer")
+      .viewer__frame
+        figure.viewer__figure
+          img.viewer__img(data-viewer-img alt="")
+          figcaption.viewer__caption
+            span(data-viewer-caption)
+            span.viewer__count(data-viewer-count)
+        button.round-btn.viewer__btn.viewer__btn--close(type="button" data-viewer-close aria-label="Close the viewer")
+          +icon('x')
+        button.round-btn.viewer__btn.viewer__btn--prev(type="button" data-viewer-prev aria-label="Previous photograph")
+          +icon('arrow-left')
+        button.round-btn.viewer__btn.viewer__btn--next(type="button" data-viewer-next aria-label="Next photograph")
+          +icon('arrow-right')
+
+  //- 4. What we build / do / make
+  section#kinds.nb-kinds
+    .container
+      .section-head(data-reveal)
+        h2= pg.kinds.title
+        p.lead= pg.kinds.lead
+      ul.cards(class={ 'cards--four': pg.kinds.items.length === 4 })
+        each k, i in pg.kinds.items
+          li.card(data-reveal style=`--i: ${i}`)
+            .card__panel(class={ 'card__panel--text': !k.photo })
+              if k.photo
+                .card__media
+                  +picture(k.photo, { sizes: '(max-width: 60rem) 100vw, 33vw', decorative: true })
+              .card__body
+                h3= k.title
+                p= k.body
+
+  //- 5. What's included
+  section#included.nb-included
+    .container
+      .section-head(data-reveal)
+        h2 What’s included.
+        p.lead= pg.included.lead
+      ol.scope
+        each item, i in pg.included.items
+          li.scope__item(data-reveal style=`--i: ${i % 3}`)
+            span.scope__num= String(i + 1).padStart(2, '0')
+            h3= item.title
+            p= item.body
+
+  //- 6. Stages
+  section#stages.nb-stages
+    .container.nb-stages__inner
+      .nb-stages__head(data-reveal)
+        h2= pg.stages.title
+        p.lead #{pg.stages.items.length} #{pg.stages.lead}
+        a.btn.btn--on-dark(href=enquire) Start with a conversation
+      ol.timeline
+        each st, i in pg.stages.items
+          li.timeline__item(data-reveal)
+            span.timeline__tag Stage #{i + 1}
+            h3= st.title
+            p= st.body
+            p.timeline__outcome
+              strong You get:
+              = ' ' + st.outcome
+
+  //- 7. Materials
+  section#materials.feature
+    .container.feature__inner
+      .feature__media(data-reveal="wipe")
+        +picture(pg.materials.photo, { sizes: '(max-width: 60rem) 100vw, 50vw' })
+      .feature__text(data-reveal)
+        h2= pg.materials.title
+        p.lead= pg.materials.lead
+        dl.feature__facts
+          each m in pg.materials.items
+            div
+              dt= m.title
+              dd= m.body
+
+  //- 8. Questions
+  section#questions.questions.questions--plain
+    .container.questions__inner
+      .questions__head(data-reveal)
+        h2= pg.faqs.title
+        p.lead The things people most often ask first.
+      .questions__list(data-reveal)
+        each f in pg.faqs.items
+          details.faq(data-faq)
+            summary
+              span= f.q
+              span.faq__icon
+                +icon('plus')
+            .faq__body
+              p= f.a
+
+  //- 9. Call to action
+  section.cta-band
+    .container.cta-band__inner(data-reveal)
+      h2= pg.cta.title
+      p.lead= pg.cta.lead
+      .cta-band__actions
+        a.btn.btn--on-dark.btn--lg(href=enquire)
+          span= pg.cta.action
+          +icon('arrow-right')
+        a.text-link.text-link--light(href="/#services")
+          span See everything we do
+          +icon('arrow-right')

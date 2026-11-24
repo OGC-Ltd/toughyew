@@ -6,6 +6,9 @@ import compression from 'compression';
 import morgan from 'morgan';
 import { config, isProd } from './config.js';
 import { router } from './routes/index.js';
+import { quotesRouter } from './routes/quotes.js';
+import { staffRouter } from './routes/staff.js';
+import { logVisits } from './tracking.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -15,6 +18,8 @@ export function createApp() {
   app.set('view engine', 'pug');
   app.set('views', path.join(root, 'views'));
   app.disable('x-powered-by');
+  // Behind a proxy (nginx, Cloudflare…) set TRUST_PROXY in .env, e.g. 1 for one proxy hop, so visitor IPs are real.
+  if (config.trustProxy) app.set('trust proxy', /^\d+$/.test(config.trustProxy) ? Number(config.trustProxy) : config.trustProxy);
 
   app.use(
     helmet({
@@ -34,6 +39,8 @@ export function createApp() {
   app.use(express.json());
   app.use(express.static(path.join(root, 'public'), { maxAge: isProd ? '7d' : 0 }));
 
+  app.use(logVisits);
+
   app.use((req, res, next) => {
     res.locals.appName = config.appName;
     res.locals.path = req.path;
@@ -42,6 +49,8 @@ export function createApp() {
   });
 
   app.use(router);
+  app.use(quotesRouter);
+  app.use(staffRouter);
 
   app.use((_req, res) => {
     res.status(404).render('pages/404', { title: 'Not found' });

@@ -1,0 +1,72 @@
+extends ../layouts/base
+
+//- Staff only (src/routes/staff.ts): every quotation suppliers have sent, newest first.
+block content
+  section.quote-hero.quote-hero--staff
+    .container.quote-hero__inner
+      h1 Received quotations.
+      p.lead
+        if total === 0
+          | No supplier has sent a quotation yet. Share the form at #[a(href="/supplier-quote") /supplier-quote] with your suppliers.
+        else
+          | #{total} #{total === 1 ? 'quotation' : 'quotations'} from suppliers, newest first. Open one to see it in full or print it.
+
+  section.quote-page
+    .container
+      .staff-list
+        form.staff-filter(method="get" action="/staff/quotations" role="search")
+          .field
+            label(for="f-q") Search
+            input#f-q(type="search" name="q" value=term placeholder="Supplier, material, quote number, site…")
+          .field
+            label(for="f-status") Prices
+            select#f-status(name="status")
+              option(value="all" selected=status === 'all') All
+              option(value="valid" selected=status === 'valid') Still valid
+              option(value="expired" selected=status === 'expired') Expired
+          .staff-filter__actions
+            button.btn.btn--primary(type="submit") Show
+            if term || status !== 'all'
+              a.btn.btn--outline(href="/staff/quotations") Clear
+            if quotes.length
+              a.btn.btn--outline(href=csvHref download) Download spreadsheet (CSV)
+
+        if total && !quotes.length
+          p.staff-list__empty Nothing matches that search.
+        else if quotes.length
+          p.staff-list__count(role="status")
+            if term || status !== 'all'
+              | Showing #{quotes.length} of #{total}.
+          .staff-table-wrap
+            table.staff-table
+              thead
+                tr
+                  th(scope="col") Received
+                  th(scope="col") Supplier
+                  th(scope="col") Their quote
+                  th(scope="col") Materials
+                  th(scope="col") Site
+                  th.num(scope="col") Total
+                  th(scope="col") Valid until
+              tbody
+                each q in quotes
+                  tr
+                    td.staff-table__date= shortDay(q.receivedAt)
+                    td
+                      a.staff-table__link(href=`/staff/quotations/${q.id}`)= q.business
+                      span.staff-table__sub #{q.contact} · #{q.phone}
+                    td
+                      | #{q.quoteNo}
+                      if q.ourRef
+                        span.staff-table__sub Ours: #{q.ourRef}
+                    td
+                      | #{q.items.slice(0, 2).map((i) => i.desc).join(', ')}
+                      if q.items.length > 2
+                        span.staff-table__sub and #{q.items.length - 2} more
+                    td= q.site || '—'
+                    td.num
+                      span.staff-table__cur= q.currency
+                      |  #{fmt(q.totals.total)}
+                    td
+                      span.badge(class=q.expired ? 'badge--expired' : 'badge--valid')= shortDay(q.validUntil)
+                      span.visually-hidden= q.expired ? ' (expired)' : ' (still valid)'
