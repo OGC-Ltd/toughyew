@@ -34,18 +34,3 @@ views/
 public/              static files; css/ is generated
 ```
 
-Add a page: a route in `src/routes/index.ts` and a template in `views/pages/` that `extends ../layouts/base`.
-
-## Motion
-
-`src/client/site.ts` (compiled to `public/js/site.js`) adds the behaviour: the pinned header that turns solid once the page scrolls, the hero slideshow (crossfade, slow push-in, progress dots, pause), scroll reveals, the gallery rail that steps along by itself (pause button, arrows, holds still on hover and focus), the FAQ ease-in and the form sending state. The page works with scripting off, and every animation stops under `prefers-reduced-motion: reduce`.
-
-## Deploying
-
-Runs on the project-manager server beside the SAS tracker. project-manager's Caddy serves HTTPS for
-toughyew.com from `toughyew.caddy` (copied to `~/project-manager/sites/`) and reaches the
-`toughyew` container over the shared `edge` network. Saved data lives in the `toughyew-data` volume.
-
-A push to `main` runs the checks, publishes `ghcr.io/ogc-ltd/toughyew:sha-<7>` and, once this repo's
-`production` environment has the `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_KEY` and `DEPLOY_KNOWN_HOSTS`
-secrets, deploys it to `~/toughyew` on the server.
